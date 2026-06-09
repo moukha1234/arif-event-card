@@ -347,6 +347,9 @@ document.addEventListener('DOMContentLoaded', () => {
     btnText.classList.add('hidden');
     btnLoadingText.classList.remove('hidden');
 
+    // Helper to clamp values between min and max
+    const clamp = (val, min, max) => Math.max(min, Math.min(max, val));
+
     // Wait for Google fonts and images to load completely before capturing
     const fontsReady = document.fonts ? document.fonts.ready : Promise.resolve();
 
@@ -391,17 +394,35 @@ document.addEventListener('DOMContentLoaded', () => {
         return Promise.all([...svgPromises, userImgPromise, placeholderPromise]);
       })
       .then(([logoImg, scallopedImg, starImg, pinImg, clockImg, userImg, placeholderImg]) => {
-        // Create canvas
+        // 1. SETUP CANVAS & RESOLUTION SCALING
+        const dpr = window.devicePixelRatio || 1;
         const canvas = document.createElement('canvas');
-        canvas.width = LayoutConfig.canvas.width;
-        canvas.height = LayoutConfig.canvas.height;
+        
+        // Physical resolution
+        canvas.width = 800 * dpr;
+        canvas.height = 1000 * dpr;
+        
+        // Logical layout size
+        canvas.style.width = "800px";
+        canvas.style.height = "1000px";
+        
         const ctx = canvas.getContext('2d');
+        
+        // Apply high-DPI transform scale
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
         
         ctx.imageSmoothingEnabled = true;
         ctx.imageSmoothingQuality = 'high';
 
-        // 1. Draw Background
-        // Top gradient
+        // ==========================================================================
+        // STAGE A: BACKGROUND RENDERING (FIRST LAYER)
+        // ==========================================================================
+
+        // A.1 Full-canvas white base rectangle to prevent any blank transparent zones
+        ctx.fillStyle = '#FFFFFF';
+        ctx.fillRect(0, 0, 800, 1000);
+
+        // A.2 Top-half slate gradient backgrounds
         const grad1 = ctx.createLinearGradient(0, 0, 800, 480);
         grad1.addColorStop(0, '#0A1128');
         grad1.addColorStop(0.6, '#152238');
@@ -421,11 +442,38 @@ document.addEventListener('DOMContentLoaded', () => {
         ctx.fillStyle = grad3;
         ctx.fillRect(0, 0, 800, 480);
 
-        // Bottom background
+        // A.3 Bottom-half warm-white background
         ctx.fillStyle = '#FAF9F6';
         ctx.fillRect(0, 450, 800, 550);
 
-        // Dot grid overlay (fine texture)
+        // A.4 Ambient Glows (clamped to boundaries)
+        const magentaGlowX = clamp(840, 0, 800);
+        const magentaGlowY = clamp(100, 0, 1000);
+        const glowMagenta = ctx.createRadialGradient(magentaGlowX, magentaGlowY, 0, magentaGlowX, magentaGlowY, 280);
+        glowMagenta.addColorStop(0, 'rgba(226, 0, 122, 0.08)');
+        glowMagenta.addColorStop(1, 'rgba(226, 0, 122, 0)');
+        ctx.fillStyle = glowMagenta;
+        ctx.fillRect(0, 0, 800, 1000);
+
+        const cyanGlowX = clamp(-50, 0, 800);
+        const cyanGlowY = clamp(900, 0, 1000);
+        const glowCyan = ctx.createRadialGradient(cyanGlowX, cyanGlowY, 0, cyanGlowX, cyanGlowY, 350);
+        glowCyan.addColorStop(0, 'rgba(0, 161, 201, 0.08)');
+        glowCyan.addColorStop(1, 'rgba(0, 161, 201, 0)');
+        ctx.fillStyle = glowCyan;
+        ctx.fillRect(0, 0, 800, 1000);
+
+        // A.5 Fine full-card dot pattern (clamped to boundaries)
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.02)';
+        for (let x = 0; x < 800; x += 24) {
+          for (let y = 0; y < 1000; y += 24) {
+            ctx.beginPath();
+            ctx.arc(x, y, 1.5, 0, Math.PI * 2);
+            ctx.fill();
+          }
+        }
+
+        // A.6 Bottom background texture dots
         ctx.fillStyle = 'rgba(0, 0, 0, 0.012)';
         for (let x = 0; x < 800; x += 16) {
           for (let y = 450; y < 1000; y += 16) {
@@ -443,31 +491,11 @@ document.addEventListener('DOMContentLoaded', () => {
           }
         }
 
-        // Global ambient glows
-        const glowMagenta = ctx.createRadialGradient(840, 100, 0, 840, 100, 280);
-        glowMagenta.addColorStop(0, 'rgba(226, 0, 122, 0.08)');
-        glowMagenta.addColorStop(1, 'rgba(226, 0, 122, 0)');
-        ctx.fillStyle = glowMagenta;
-        ctx.fillRect(0, 0, 800, 1000);
+        // ==========================================================================
+        // STAGE B: SHAPES RENDERING (SECOND LAYER)
+        // ==========================================================================
 
-        const glowCyan = ctx.createRadialGradient(-50, 900, 0, -50, 900, 350);
-        glowCyan.addColorStop(0, 'rgba(0, 161, 201, 0.08)');
-        glowCyan.addColorStop(1, 'rgba(0, 161, 201, 0)');
-        ctx.fillStyle = glowCyan;
-        ctx.fillRect(0, 0, 800, 1000);
-
-        // Fine full-card dot pattern
-        ctx.fillStyle = 'rgba(0, 0, 0, 0.02)';
-        for (let x = 0; x < 800; x += 24) {
-          for (let y = 0; y < 1000; y += 24) {
-            ctx.beginPath();
-            ctx.arc(x, y, 1.5, 0, Math.PI * 2);
-            ctx.fill();
-          }
-        }
-
-        // 2. Draw Torn Paper Divider
-        // Gray shadow layer
+        // B.1 Torn Paper Divider Gray Shadow
         ctx.save();
         ctx.beginPath();
         const grayPoints = [
@@ -487,7 +515,7 @@ document.addEventListener('DOMContentLoaded', () => {
         ctx.fill();
         ctx.restore();
 
-        // White paper layer
+        // B.2 Torn Paper Divider White Crumpled Layer
         ctx.save();
         ctx.beginPath();
         const whitePoints = [
@@ -508,47 +536,282 @@ document.addEventListener('DOMContentLoaded', () => {
         ctx.fill();
         ctx.restore();
 
-        // 3. Draw Decorative Dots and Circles
-        // Top right dots
+        // B.3 Decorative dots (top-right & bottom-left)
         ctx.fillStyle = 'rgba(0, 0, 0, 0.25)';
+        const trDotsX = clamp(LayoutConfig.decorations.topRightDots.x, 0, 800);
+        const trDotsY = clamp(LayoutConfig.decorations.topRightDots.y, 0, 1000);
         for (let r = 0; r < 2; r++) {
           for (let c = 0; c < 6; c++) {
             ctx.beginPath();
-            ctx.arc(LayoutConfig.decorations.topRightDots.x + c * 14 + 3, LayoutConfig.decorations.topRightDots.y + r * 14 + 3, 3, 0, Math.PI * 2);
+            ctx.arc(trDotsX + c * 14 + 3, trDotsY + r * 14 + 3, 3, 0, Math.PI * 2);
             ctx.fill();
           }
         }
-        // Bottom left dots
+
+        const blDotsX = clamp(LayoutConfig.decorations.bottomLeftDots.x, 0, 800);
+        const blDotsY = clamp(LayoutConfig.decorations.bottomLeftDots.y, 0, 1000);
         for (let r = 0; r < 2; r++) {
           for (let c = 0; c < 6; c++) {
             ctx.beginPath();
-            ctx.arc(LayoutConfig.decorations.bottomLeftDots.x + c * 14 + 3, LayoutConfig.decorations.bottomLeftDots.y + r * 14 + 3, 3, 0, Math.PI * 2);
+            ctx.arc(blDotsX + c * 14 + 3, blDotsY + r * 14 + 3, 3, 0, Math.PI * 2);
             ctx.fill();
           }
         }
-        // Bottom right circles
+
+        // B.4 Decorative circles (bottom-right)
         ctx.strokeStyle = 'rgba(0, 0, 0, 0.3)';
         ctx.lineWidth = 2;
+        const brCirclesX = clamp(LayoutConfig.decorations.bottomRightCircles.x, 0, 800);
+        const brCirclesY = clamp(LayoutConfig.decorations.bottomRightCircles.y, 0, 1000);
         for (let i = 0; i < 4; i++) {
           ctx.beginPath();
-          ctx.arc(LayoutConfig.decorations.bottomRightCircles.x + i * 18 + 5, LayoutConfig.decorations.bottomRightCircles.y + 5, 4, 0, Math.PI * 2);
+          ctx.arc(brCirclesX + i * 18 + 5, brCirclesY + 5, 4, 0, Math.PI * 2);
           ctx.stroke();
         }
 
-        // 4. Draw Logo and Scalloped Date Badge
-        // Logo
-        if (logoImg) {
-          ctx.drawImage(logoImg, LayoutConfig.logo.x, LayoutConfig.logo.y, LayoutConfig.logo.width, LayoutConfig.logo.height);
+        // B.5 User Avatar frame rings
+        const p = LayoutConfig.profile;
+        const avatarCX = clamp(p.cx, 0, 800);
+        const avatarCY = clamp(p.cy, 0, 1000);
+        
+        ctx.save();
+        // Outer border
+        ctx.beginPath();
+        ctx.arc(avatarCX, avatarCY, p.outerRadius, 0, Math.PI * 2);
+        ctx.fillStyle = p.borderColor;
+        ctx.fill();
+
+        // White padding
+        ctx.beginPath();
+        ctx.arc(avatarCX, avatarCY, p.outerRadius - 4, 0, Math.PI * 2);
+        ctx.fillStyle = '#FFFFFF';
+        ctx.fill();
+
+        // Dashed inner ring
+        ctx.strokeStyle = p.innerDashedColor;
+        ctx.lineWidth = 2;
+        ctx.setLineDash([6, 6]);
+        ctx.beginPath();
+        ctx.arc(avatarCX, avatarCY, p.innerRadius, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.setLineDash([]);
+        ctx.restore();
+
+        // B.6 Floating Seal Circle (cyan/teal background)
+        const sealCX = clamp(p.seal.cx, 0, 800);
+        const sealCY = clamp(p.seal.cy, 0, 1000);
+        ctx.save();
+        const sealGrad = ctx.createLinearGradient(sealCX - p.seal.r, sealCY - p.seal.r, sealCX + p.seal.r, sealCY + p.seal.r);
+        sealGrad.addColorStop(0, p.seal.color[0]);
+        sealGrad.addColorStop(1, p.seal.color[1]);
+
+        ctx.beginPath();
+        ctx.arc(sealCX, sealCY, p.seal.r, 0, Math.PI * 2);
+        ctx.fillStyle = sealGrad;
+        ctx.fill();
+
+        ctx.strokeStyle = '#FFFFFF';
+        ctx.lineWidth = 3;
+        ctx.stroke();
+        ctx.restore();
+
+        // B.7 Heading Badge Background Box
+        const heading = LayoutConfig.headingBadge;
+        const headingY = clamp(heading.y, 0, 1000);
+        ctx.save();
+        ctx.font = "800 13px 'Montserrat', sans-serif";
+        ctx.letterSpacing = "1.5px";
+        const badgeText = "CONFIRMATION DE PARTICIPATION";
+        const badgeTextWidth = ctx.measureText(badgeText).width;
+        const badgeW = badgeTextWidth + 72;
+        const badgeX = clamp(400 - badgeW / 2, 0, 800);
+        
+        ctx.beginPath();
+        if (ctx.roundRect) {
+          ctx.roundRect(badgeX, headingY, badgeW, heading.height, heading.height / 2);
+        } else {
+          const rx = badgeX, ry = headingY, rw = badgeW, rh = heading.height, rr = heading.height / 2;
+          ctx.moveTo(rx + rr, ry);
+          ctx.lineTo(rx + rw - rr, ry);
+          ctx.quadraticCurveTo(rx + rw, ry, rx + rw, ry + rr);
+          ctx.quadraticCurveTo(rx + rw, ry + rh, rx + rw - rr, ry + rh);
+          ctx.lineTo(rx + rr, ry + rh);
+          ctx.quadraticCurveTo(rx, ry + rh, rx, ry + rr);
+          ctx.quadraticCurveTo(rx, ry, rx + rr, ry);
         }
-        // Badge Background
-        if (scallopedImg) {
-          ctx.drawImage(scallopedImg, LayoutConfig.dateBadge.x, LayoutConfig.dateBadge.y, LayoutConfig.dateBadge.width, LayoutConfig.dateBadge.height);
+        ctx.fillStyle = heading.bgColor;
+        ctx.fill();
+        ctx.strokeStyle = heading.borderColor;
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+        ctx.restore();
+
+        // B.8 Underline under user name
+        const nameConf = LayoutConfig.text.name;
+        ctx.save();
+        ctx.font = `900 ${nameFontSize}px 'Montserrat', sans-serif`;
+        const nameWidth = ctx.measureText(displayName).width;
+        const nameConfY = clamp(nameConf.y, 0, 1000);
+        const lineY = nameConfY + nameFontSize / 2 + nameConf.underlineSpacing;
+        
+        ctx.strokeStyle = nameConf.underlineColor;
+        ctx.lineWidth = nameConf.underlineThickness;
+        ctx.lineCap = 'round';
+        ctx.beginPath();
+        ctx.moveTo(clamp(400 - nameWidth / 2, 0, 800), lineY);
+        ctx.lineTo(clamp(400 + nameWidth / 2, 0, 800), lineY);
+        ctx.stroke();
+        ctx.restore();
+
+        // B.9 Bottom Details Box Outline & Icon boxes
+        const details = LayoutConfig.eventDetails;
+        const detailsX = clamp(details.x, 0, 800);
+        const detailsY = clamp(details.y, 0, 1000);
+
+        ctx.save();
+        ctx.beginPath();
+        if (ctx.roundRect) {
+          ctx.roundRect(detailsX, detailsY, details.width, details.height, 16);
+        } else {
+          const rx = detailsX, ry = detailsY, rw = details.width, rh = details.height, rr = 16;
+          ctx.moveTo(rx + rr, ry);
+          ctx.lineTo(rx + rw - rr, ry);
+          ctx.quadraticCurveTo(rx + rw, ry, rx + rw, ry + rr);
+          ctx.quadraticCurveTo(rx + rw, ry + rh, rx + rw - rr, ry + rh);
+          ctx.lineTo(rx + rr, ry + rh);
+          ctx.quadraticCurveTo(rx, ry + rh, rx, ry + rr);
+          ctx.quadraticCurveTo(rx, ry, rx + rr, ry);
+        }
+        ctx.fillStyle = details.bgColor;
+        ctx.fill();
+        ctx.strokeStyle = details.borderColor;
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+
+        // Column 1 icon card box
+        const col1BoxX = clamp(detailsX + 24, 0, 800);
+        const boxY = clamp(detailsY + 25, 0, 1000);
+        ctx.beginPath();
+        if (ctx.roundRect) {
+          ctx.roundRect(col1BoxX, boxY, 44, 44, 10);
+        } else {
+          const rx = col1BoxX, ry = boxY, rw = 44, rh = 44, rr = 10;
+          ctx.moveTo(rx + rr, ry);
+          ctx.lineTo(rx + rw - rr, ry);
+          ctx.quadraticCurveTo(rx + rw, ry, rx + rw, ry + rr);
+          ctx.quadraticCurveTo(rx + rw, ry + rh, rx + rw - rr, ry + rh);
+          ctx.lineTo(rx + rr, ry + rh);
+          ctx.quadraticCurveTo(rx, ry + rh, rx, ry + rr);
+          ctx.quadraticCurveTo(rx, ry, rx + rr, ry);
+        }
+        ctx.fillStyle = 'rgba(226, 0, 122, 0.08)';
+        ctx.fill();
+        ctx.strokeStyle = 'rgba(226, 0, 122, 0.18)';
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+
+        // Column 2 icon card box
+        const col2BoxX = clamp(detailsX + 354, 0, 800);
+        ctx.beginPath();
+        if (ctx.roundRect) {
+          ctx.roundRect(col2BoxX, boxY, 44, 44, 10);
+        } else {
+          const rx = col2BoxX, ry = boxY, rw = 44, rh = 44, rr = 10;
+          ctx.moveTo(rx + rr, ry);
+          ctx.lineTo(rx + rw - rr, ry);
+          ctx.quadraticCurveTo(rx + rw, ry, rx + rw, ry + rr);
+          ctx.quadraticCurveTo(rx + rw, ry + rh, rx + rw - rr, ry + rh);
+          ctx.lineTo(rx + rr, ry + rh);
+          ctx.quadraticCurveTo(rx, ry + rh, rx, ry + rr);
+          ctx.quadraticCurveTo(rx, ry, rx + rr, ry);
+        }
+        ctx.fillStyle = 'rgba(226, 0, 122, 0.08)';
+        ctx.fill();
+        ctx.strokeStyle = 'rgba(226, 0, 122, 0.18)';
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+        ctx.restore();
+
+        // ==========================================================================
+        // STAGE C: IMAGES RENDERING (THIRD LAYER)
+        // ==========================================================================
+
+        // C.1 Logo
+        if (logoImg) {
+          const logoX = clamp(LayoutConfig.logo.x, 0, 800);
+          const logoY = clamp(LayoutConfig.logo.y, 0, 1000);
+          ctx.drawImage(logoImg, logoX, logoY, LayoutConfig.logo.width, LayoutConfig.logo.height);
         }
 
-        // Badge Text (20 JUIN 15 H)
-        const dayText = document.querySelector('.scalloped-day').textContent.trim();
-        const monthText = document.querySelector('.scalloped-month').textContent.trim();
-        const timeText = document.querySelector('.scalloped-time').textContent.trim();
+        // C.2 Scalloped Date Badge shape
+        if (scallopedImg) {
+          const badgeX = clamp(LayoutConfig.dateBadge.x, 0, 800);
+          const badgeY = clamp(LayoutConfig.dateBadge.y, 0, 1000);
+          ctx.drawImage(scallopedImg, badgeX, badgeY, LayoutConfig.dateBadge.width, LayoutConfig.dateBadge.height);
+        }
+
+        // C.3 User Avatar Image Crop
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(avatarCX, avatarCY, p.clipRadius, 0, Math.PI * 2);
+        ctx.clip();
+
+        if (hasUserImage && userImg) {
+          const imgW = userImg.naturalWidth || userImg.width;
+          const imgH = userImg.naturalHeight || userImg.height;
+          
+          let dw = 220;
+          let dh = 220;
+          if (imgW >= imgH) {
+            dw = 220 * (imgW / imgH);
+          } else {
+            dh = 220 * (imgH / imgW);
+          }
+          
+          const zoom = clamp(sliderZoom.value / 100, 0.5, 3.0);
+          const rawX = parseFloat(sliderX.value);
+          const rawY = parseFloat(sliderY.value);
+          const x = clamp(rawX, -150, 150);
+          const y = clamp(rawY, -150, 150);
+          
+          ctx.save();
+          ctx.translate(avatarCX, avatarCY);
+          ctx.translate(x, y);
+          ctx.scale(zoom, zoom);
+          ctx.drawImage(userImg, -dw / 2, -dh / 2, dw, dh);
+          ctx.restore();
+        } else {
+          ctx.fillStyle = '#E2E8F0';
+          ctx.fillRect(avatarCX - p.clipRadius, avatarCY - p.clipRadius, p.clipRadius * 2, p.clipRadius * 2);
+          if (placeholderImg) {
+            ctx.drawImage(placeholderImg, avatarCX - 55, avatarCY - 55, 110, 110);
+          }
+        }
+        ctx.restore(); // Restore clipping context
+
+        // C.4 Floating Star Icon (on the status seal)
+        if (starImg) {
+          ctx.save();
+          ctx.drawImage(starImg, sealCX - 11, sealCY - 11, 22, 22);
+          ctx.restore();
+        }
+
+        // C.5 Details Box Icons (Lieu and Heure SVGs)
+        if (pinImg) {
+          ctx.drawImage(pinImg, col1BoxX + 11, boxY + 11, 22, 22);
+        }
+        if (clockImg) {
+          ctx.drawImage(clockImg, col2BoxX + 11, boxY + 11, 22, 22);
+        }
+
+        // ==========================================================================
+        // STAGE D: TEXTS RENDERING (FOURTH LAYER)
+        // ==========================================================================
+
+        // D.1 Scalloped Date Badge Content Texts
+        const dayText = document.querySelector('.scalloped-day') ? document.querySelector('.scalloped-day').textContent.trim() : "20";
+        const monthText = document.querySelector('.scalloped-month') ? document.querySelector('.scalloped-month').textContent.trim() : "JUIN";
+        const timeText = document.querySelector('.scalloped-time') ? document.querySelector('.scalloped-time').textContent.trim() : "15 H";
 
         ctx.save();
         ctx.textAlign = 'center';
@@ -574,175 +837,43 @@ document.addEventListener('DOMContentLoaded', () => {
         ctx.fillText(timeText, 690, 131);
         ctx.restore();
 
-        // 5. Draw Avatar Frame and Image Crop
-        const p = LayoutConfig.profile;
-        
-        // Outer border
-        ctx.save();
-        ctx.beginPath();
-        ctx.arc(p.cx, p.cy, p.outerRadius, 0, Math.PI * 2);
-        ctx.fillStyle = p.borderColor;
-        ctx.fill();
-
-        // White padding
-        ctx.beginPath();
-        ctx.arc(p.cx, p.cy, p.outerRadius - 4, 0, Math.PI * 2);
-        ctx.fillStyle = '#FFFFFF';
-        ctx.fill();
-
-        // Dashed inner circle
-        ctx.strokeStyle = p.innerDashedColor;
-        ctx.lineWidth = 2;
-        ctx.setLineDash([6, 6]);
-        ctx.beginPath();
-        ctx.arc(p.cx, p.cy, p.innerRadius, 0, Math.PI * 2);
-        ctx.stroke();
-        ctx.setLineDash([]);
-
-        // Clip path for image/placeholder
-        ctx.beginPath();
-        ctx.arc(p.cx, p.cy, p.clipRadius, 0, Math.PI * 2);
-        ctx.clip();
-
-        if (hasUserImage && userImg) {
-          const imgW = userImg.naturalWidth || userImg.width;
-          const imgH = userImg.naturalHeight || userImg.height;
-          
-          let dw = 220;
-          let dh = 220;
-          if (imgW >= imgH) {
-            dw = 220 * (imgW / imgH);
-          } else {
-            dh = 220 * (imgH / imgW);
-          }
-          
-          const zoom = sliderZoom.value / 100;
-          const x = parseFloat(sliderX.value);
-          const y = parseFloat(sliderY.value);
-          
-          ctx.save();
-          ctx.translate(p.cx, p.cy);
-          ctx.translate(x, y);
-          ctx.scale(zoom, zoom);
-          ctx.drawImage(userImg, -dw / 2, -dh / 2, dw, dh);
-          ctx.restore();
-        } else {
-          ctx.fillStyle = '#E2E8F0';
-          ctx.fillRect(p.cx - p.clipRadius, p.cy - p.clipRadius, p.clipRadius * 2, p.clipRadius * 2);
-          if (placeholderImg) {
-            ctx.drawImage(placeholderImg, p.cx - 55, p.cy - 55, 110, 110);
-          }
-        }
-        ctx.restore(); // Restore from clipping mask
-
-        // Floating Gold/Cyan badge on frame
-        ctx.save();
-        const sealGrad = ctx.createLinearGradient(p.seal.cx - p.seal.r, p.seal.cy - p.seal.r, p.seal.cx + p.seal.r, p.seal.cy + p.seal.r);
-        sealGrad.addColorStop(0, p.seal.color[0]);
-        sealGrad.addColorStop(1, p.seal.color[1]);
-
-        ctx.beginPath();
-        ctx.arc(p.seal.cx, p.seal.cy, p.seal.r, 0, Math.PI * 2);
-        ctx.fillStyle = sealGrad;
-        ctx.fill();
-
-        ctx.strokeStyle = '#FFFFFF';
-        ctx.lineWidth = 3;
-        ctx.stroke();
-
-        if (starImg) {
-          ctx.drawImage(starImg, p.seal.cx - 11, p.seal.cy - 11, 22, 22);
-        }
-        ctx.restore();
-
-        // 6. Draw Texts
-        // Heading Badge (CONFIRMATION DE PARTICIPATION)
-        const heading = LayoutConfig.headingBadge;
+        // D.2 Heading Badge ("CONFIRMATION DE PARTICIPATION" and Dots)
         ctx.save();
         ctx.font = "800 13px 'Montserrat', sans-serif";
         ctx.letterSpacing = "1.5px";
-        const badgeText = "CONFIRMATION DE PARTICIPATION";
-        const badgeTextWidth = ctx.measureText(badgeText).width;
-        const badgeW = badgeTextWidth + 72;
-        const badgeX = 400 - badgeW / 2;
-        
-        ctx.beginPath();
-        if (ctx.roundRect) {
-          ctx.roundRect(badgeX, heading.y, badgeW, heading.height, heading.height / 2);
-        } else {
-          const rx = badgeX, ry = heading.y, rw = badgeW, rh = heading.height, rr = heading.height / 2;
-          ctx.moveTo(rx + rr, ry);
-          ctx.lineTo(rx + rw - rr, ry);
-          ctx.quadraticCurveTo(rx + rw, ry, rx + rw, ry + rr);
-          ctx.quadraticCurveTo(rx + rw, ry + rh, rx + rw - rr, ry + rh);
-          ctx.lineTo(rx + rr, ry + rh);
-          ctx.quadraticCurveTo(rx, ry + rh, rx, ry + rr);
-          ctx.quadraticCurveTo(rx, ry, rx + rr, ry);
-        }
-        ctx.fillStyle = heading.bgColor;
-        ctx.fill();
-        ctx.strokeStyle = heading.borderColor;
-        ctx.lineWidth = 1.5;
-        ctx.stroke();
-        
         ctx.fillStyle = heading.color;
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
-        ctx.fillText(badgeText, 400, heading.y + heading.height / 2);
+        ctx.fillText(badgeText, 400, headingY + heading.height / 2);
         
         ctx.beginPath();
-        ctx.arc(400 - badgeTextWidth / 2 - 15, heading.y + heading.height / 2, 3, 0, Math.PI * 2);
-        ctx.arc(400 + badgeTextWidth / 2 + 15, heading.y + heading.height / 2, 3, 0, Math.PI * 2);
+        ctx.arc(400 - badgeTextWidth / 2 - 15, headingY + heading.height / 2, 3, 0, Math.PI * 2);
+        ctx.arc(400 + badgeTextWidth / 2 + 15, headingY + heading.height / 2, 3, 0, Math.PI * 2);
         ctx.fillStyle = heading.color;
         ctx.fill();
         ctx.restore();
 
-        // Salutation ("Je soussigné(e)")
+        // D.3 Salutation ("Je soussigné(e)")
         const salutation = LayoutConfig.text.salutation;
+        const salutationY = clamp(salutation.y, 0, 1000);
         ctx.save();
         ctx.font = salutation.font;
         ctx.fillStyle = salutation.color;
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
-        ctx.fillText("Je soussigné(e)", 400, salutation.y);
+        ctx.fillText("Je soussigné(e)", 400, salutationY);
         ctx.restore();
 
-        // User Name
-        const nameVal = inputName.value.trim();
-        const displayName = nameVal ? nameVal.toUpperCase() : "VOTRE NOM COMPLET";
-        const nameConf = LayoutConfig.text.name;
-        
-        let nameFontSize = 40;
-        if (displayName.length <= 18) {
-          nameFontSize = 40;
-        } else if (displayName.length <= 25) {
-          nameFontSize = 32;
-        } else if (displayName.length <= 35) {
-          nameFontSize = 26;
-        } else {
-          nameFontSize = 20;
-        }
-        
+        // D.4 User Name text
         ctx.save();
         ctx.font = `900 ${nameFontSize}px 'Montserrat', sans-serif`;
         ctx.fillStyle = nameConf.color;
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
-        ctx.fillText(displayName, 400, nameConf.y);
-        
-        // Underline
-        const nameWidth = ctx.measureText(displayName).width;
-        const lineY = nameConf.y + nameFontSize / 2 + nameConf.underlineSpacing;
-        ctx.strokeStyle = nameConf.underlineColor;
-        ctx.lineWidth = nameConf.underlineThickness;
-        ctx.lineCap = 'round';
-        ctx.beginPath();
-        ctx.moveTo(400 - nameWidth / 2, lineY);
-        ctx.lineTo(400 + nameWidth / 2, lineY);
-        ctx.stroke();
+        ctx.fillText(displayName, 400, nameConfY);
         ctx.restore();
 
-        // Confirmation Statement Paragraph
+        // D.5 Confirmation Statement wrapped text + subtitle
         const statement = LayoutConfig.text.statement;
         const defaultFont = "500 17px 'Inter', sans-serif";
         const boldFont = "800 17px 'Inter', sans-serif";
@@ -755,7 +886,8 @@ document.addEventListener('DOMContentLoaded', () => {
         ];
         
         ctx.save();
-        const nextY = drawRichText(ctx, segments, 400, statement.y, 660, statement.lineHeight, 'center');
+        const statementY = clamp(statement.y, 0, 1000);
+        const nextY = drawRichText(ctx, segments, 400, statementY, 660, statement.lineHeight, 'center');
         
         ctx.font = subtitleFont;
         ctx.fillStyle = statement.orgColor;
@@ -764,108 +896,43 @@ document.addEventListener('DOMContentLoaded', () => {
         ctx.fillText("(Association pour la Réussite et l’Insertion des Femmes)", 400, nextY + 6);
         ctx.restore();
 
-        // 7. Draw Bottom Event Details Box
-        const details = LayoutConfig.eventDetails;
-
+        // D.6 Bottom Event Details Texts (Column 1 and Column 2 values)
         ctx.save();
-        ctx.beginPath();
-        if (ctx.roundRect) {
-          ctx.roundRect(details.x, details.y, details.width, details.height, 16);
-        } else {
-          const rx = details.x, ry = details.y, rw = details.width, rh = details.height, rr = 16;
-          ctx.moveTo(rx + rr, ry);
-          ctx.lineTo(rx + rw - rr, ry);
-          ctx.quadraticCurveTo(rx + rw, ry, rx + rw, ry + rr);
-          ctx.quadraticCurveTo(rx + rw, ry + rh, rx + rw - rr, ry + rh);
-          ctx.lineTo(rx + rr, ry + rh);
-          ctx.quadraticCurveTo(rx, ry + rh, rx, ry + rr);
-          ctx.quadraticCurveTo(rx, ry, rx + rr, ry);
-        }
-        ctx.fillStyle = details.bgColor;
-        ctx.fill();
-        ctx.strokeStyle = details.borderColor;
-        ctx.lineWidth = 1.5;
-        ctx.stroke();
-
-        // Column 1 (Lieu) Icon box
-        const col1BoxX = details.x + 24;
-        const boxY = details.y + 25;
-        ctx.beginPath();
-        if (ctx.roundRect) {
-          ctx.roundRect(col1BoxX, boxY, 44, 44, 10);
-        } else {
-          const rx = col1BoxX, ry = boxY, rw = 44, rh = 44, rr = 10;
-          ctx.moveTo(rx + rr, ry);
-          ctx.lineTo(rx + rw - rr, ry);
-          ctx.quadraticCurveTo(rx + rw, ry, rx + rw, ry + rr);
-          ctx.quadraticCurveTo(rx + rw, ry + rh, rx + rw - rr, ry + rh);
-          ctx.lineTo(rx + rr, ry + rh);
-          ctx.quadraticCurveTo(rx, ry + rh, rx, ry + rr);
-          ctx.quadraticCurveTo(rx, ry, rx + rr, ry);
-        }
-        ctx.fillStyle = 'rgba(226, 0, 122, 0.08)';
-        ctx.fill();
-        ctx.strokeStyle = 'rgba(226, 0, 122, 0.18)';
-        ctx.lineWidth = 1.5;
-        ctx.stroke();
-
-        if (pinImg) {
-          ctx.drawImage(pinImg, col1BoxX + 11, boxY + 11, 22, 22);
-        }
-
-        const text1X = details.x + details.col1X;
-        ctx.textAlign = 'left';
         ctx.textBaseline = 'alphabetic';
-
-        ctx.font = "700 11px 'Montserrat', sans-serif";
-        ctx.fillStyle = details.labelColor;
-        ctx.letterSpacing = "1.5px";
-        ctx.fillText("LIEU", text1X, details.y + 40);
-
-        ctx.font = "800 17px 'Inter', sans-serif";
-        ctx.fillStyle = details.valueColor;
-        ctx.letterSpacing = "0px";
-        ctx.fillText("Mairie Ville de Rufisque", text1X, details.y + 64);
-
-        // Column 2 (Heure) Icon box
-        const col2BoxX = details.x + 354;
-        ctx.beginPath();
-        if (ctx.roundRect) {
-          ctx.roundRect(col2BoxX, boxY, 44, 44, 10);
-        } else {
-          const rx = col2BoxX, ry = boxY, rw = 44, rh = 44, rr = 10;
-          ctx.moveTo(rx + rr, ry);
-          ctx.lineTo(rx + rw - rr, ry);
-          ctx.quadraticCurveTo(rx + rw, ry, rx + rw, ry + rr);
-          ctx.quadraticCurveTo(rx + rw, ry + rh, rx + rw - rr, ry + rh);
-          ctx.lineTo(rx + rr, ry + rh);
-          ctx.quadraticCurveTo(rx, ry + rh, rx, ry + rr);
-          ctx.quadraticCurveTo(rx, ry, rx + rr, ry);
-        }
-        ctx.fillStyle = 'rgba(226, 0, 122, 0.08)';
-        ctx.fill();
-        ctx.strokeStyle = 'rgba(226, 0, 122, 0.18)';
-        ctx.lineWidth = 1.5;
-        ctx.stroke();
-
-        if (clockImg) {
-          ctx.drawImage(clockImg, col2BoxX + 11, boxY + 11, 22, 22);
-        }
-
-        const text2X = details.x + details.col2X;
+        
+        // Column 1 (Lieu) Texts
+        const text1X = clamp(detailsX + details.col1X, 0, 800);
         ctx.textAlign = 'left';
-
         ctx.font = "700 11px 'Montserrat', sans-serif";
         ctx.fillStyle = details.labelColor;
         ctx.letterSpacing = "1.5px";
-        ctx.fillText("HEURE", text2X, details.y + 40);
+        ctx.fillText("LIEU", text1X, detailsY + 40);
 
         ctx.font = "800 17px 'Inter', sans-serif";
         ctx.fillStyle = details.valueColor;
         ctx.letterSpacing = "0px";
-        ctx.fillText("À partir de 15h", text2X, details.y + 64);
+        ctx.fillText("Mairie Ville de Rufisque", text1X, detailsY + 64);
 
+        // Column 2 (Heure) Texts
+        const text2X = clamp(detailsX + details.col2X, 0, 800);
+        ctx.textAlign = 'left';
+        ctx.font = "700 11px 'Montserrat', sans-serif";
+        ctx.fillStyle = details.labelColor;
+        ctx.letterSpacing = "1.5px";
+        ctx.fillText("HEURE", text2X, detailsY + 40);
+
+        ctx.font = "800 17px 'Inter', sans-serif";
+        ctx.fillStyle = details.valueColor;
+        ctx.letterSpacing = "0px";
+        ctx.fillText("À partir de 15h", text2X, detailsY + 64);
         ctx.restore();
+
+        // ==========================================================================
+        // STAGE E: TEMPORARY RED DEBUG BORDER (DEBUG VISUAL LIMITS)
+        // ==========================================================================
+        ctx.strokeStyle = '#FF0000';
+        ctx.lineWidth = 4;
+        ctx.strokeRect(0, 0, 800, 1000);
 
         // 8. Convert to PNG Data URI & Download
         const imgData = canvas.toDataURL('image/png', 1.0);
