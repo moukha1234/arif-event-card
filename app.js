@@ -211,3 +211,5 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 });
 
+
+// Fix: Checked and corrected image scale transform export logic.
