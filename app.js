@@ -1,4 +1,4 @@
-﻿/* ==========================================================================
+/* ==========================================================================
    ARIF EVENT CARD GENERATOR - CONTROLLER LOGIC
    ========================================================================== */
 
@@ -12,7 +12,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const uploadThumb = document.getElementById('upload-thumb');
   const thumbContainer = document.getElementById('thumb-container');
   const btnRemoveImg = document.getElementById('btn-remove-img');
-  
+  const btnResetForm = document.getElementById('btn-reset-form');
   
   const previewPlaceholder = document.getElementById('preview-placeholder');
   const previewUserImg = document.getElementById('preview-user-img');
@@ -31,9 +31,9 @@ document.addEventListener('DOMContentLoaded', () => {
   const viewportWrapper = document.querySelector('.card-viewport-wrapper');
 
   // Success Toast Elements
-  
-  
-  
+  const toastSuccess = document.getElementById('toast-success');
+  const btnCloseToast = document.getElementById('btn-close-toast');
+  let toastTimeout;
 
   // ==========================================================================
   // 1. RESPONSIVE CARD SCALING IN PREVIEW VIEWPORT
@@ -88,12 +88,12 @@ document.addEventListener('DOMContentLoaded', () => {
   // ==========================================================================
   const handleImageFile = (file) => {
     if (!file || !file.type.startsWith('image/')) {
-      alert('Veuillez sÃ©lectionner un fichier image valide (PNG, JPG, JPEG).');
+      alert('Veuillez sélectionner un fichier image valide (PNG, JPG, JPEG).');
       return;
     }
 
     if (file.size > 5 * 1024 * 1024) {
-      alert('L\'image dÃ©passe la taille maximale autorisÃ©e (5 Mo).');
+      alert('L\'image dépasse la taille maximale autorisée (5 Mo).');
       return;
     }
 
@@ -206,10 +206,108 @@ document.addEventListener('DOMContentLoaded', () => {
   sliderX.addEventListener('input', updateImageTransform);
   sliderY.addEventListener('input', updateImageTransform);
 
-  
+  // ==========================================================================
+  // 5. FORM RESET HANDLING
+  // ==========================================================================
+  const resetForm = () => {
+    // Clear inputs & preview texts
+    inputName.value = '';
+    cardUserName.textContent = "Votre Nom Complet";
+    cardUserName.style.fontSize = '40px';
+    
+    // Clear image
+    removeUserImage();
+    
+    // Hide toast if visible
+    hideToast();
+  };
+
+  btnResetForm.addEventListener('click', resetForm);
+
+  // ==========================================================================
+  // 6. SUCCESS TOAST LOGIC
+  // ==========================================================================
+  const showToast = () => {
+    clearTimeout(toastTimeout);
+    toastSuccess.classList.remove('hidden');
+    // Auto hide after 5 seconds
+    toastTimeout = setTimeout(hideToast, 5000);
+  };
+
+  const hideToast = () => {
+    toastSuccess.classList.add('hidden');
+  };
+
+  btnCloseToast.addEventListener('click', hideToast);
+
+  // ==========================================================================
+  // 7. HTML2CANVAS EXPORT FUNCTIONALITY
+  // ==========================================================================
+  btnDownloadCard.addEventListener('click', () => {
+    if (typeof html2canvas === 'undefined') {
+      alert('La bibliothèque de génération d\'image (html2canvas) n\'est pas encore chargée. Veuillez patienter.');
+      return;
+    }
+
+    const btnText = btnDownloadCard.querySelector('.btn-text');
+    const btnLoadingText = btnDownloadCard.querySelector('.btn-loading-text');
+
+    // Enable spinner loading state
+    btnDownloadCard.disabled = true;
+    btnText.classList.add('hidden');
+    btnLoadingText.classList.remove('hidden');
+
+    // Short timeout to ensure UI updates before starting canvas heavy operation
+    setTimeout(() => {
+      // Config html2canvas options
+      // Target resolution = 800x1000px, scaled by 2 = 1600x2000px
+      const options = {
+        scale: 2,
+        useCORS: true,
+        allowTaint: false,
+        backgroundColor: '#FFFFFF', // Clean white fallback background to prevent transparency edges
+        logging: false,
+        imageTimeout: 15000,
+        removeContainer: true
+      };
+
+      html2canvas(eventCard, options)
+        .then((canvas) => {
+          // Convert to high-quality PNG Data URI
+          const imgData = canvas.toDataURL('image/png', 1.0);
+          
+          // Generate customized download filename
+          const nameInputVal = inputName.value.trim();
+          const cleanName = nameInputVal ? nameInputVal.toLowerCase().replace(/[^a-z0-9]/g, '_') : 'invite';
+          const filename = `ARIF_IA_Participation_${cleanName}.png`;
+
+          // Download Trigger
+          const downloadLink = document.createElement('a');
+          downloadLink.href = imgData;
+          downloadLink.download = filename;
+          document.body.appendChild(downloadLink);
+          downloadLink.click();
+          document.body.removeChild(downloadLink);
+
+          // Success Visual Cue Feedback (Pop element)
+          eventCard.classList.add('success-pop');
+          setTimeout(() => {
+            eventCard.classList.remove('success-pop');
+          }, 600);
+
+          // Show Success Toast Notification
+          showToast();
+        })
+        .catch((error) => {
+          console.error('Erreur d\'exportation avec html2canvas:', error);
+          alert('Une erreur est survenue lors de la génération de l\'image. Veuillez réessayer.');
+        })
+        .finally(() => {
+          // Reset button state
+          btnDownloadCard.disabled = false;
+          btnText.classList.remove('hidden');
+          btnLoadingText.classList.add('hidden');
+        });
     }, 350);
   });
 });
-
-
-// Fix: Checked and corrected image scale transform export logic.
