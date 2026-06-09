@@ -259,6 +259,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Short timeout to ensure UI updates before starting canvas heavy operation
     setTimeout(() => {
+      // Enable export mode to disable transforms and reset layout to 1:1
+      document.body.classList.add('export-mode');
+      
+      // Force layout recalculation (reflow) to apply styling immediately before canvas read
+      const reflow = eventCard.offsetWidth;
+
       // Config html2canvas options
       // Target resolution = 800x1000px, scaled by 2 = 1600x2000px
       const options = {
@@ -268,7 +274,9 @@ document.addEventListener('DOMContentLoaded', () => {
         backgroundColor: '#FFFFFF', // Clean white fallback background to prevent transparency edges
         logging: false,
         imageTimeout: 15000,
-        removeContainer: true
+        removeContainer: true,
+        windowWidth: 800,
+        windowHeight: 1000
       };
 
       html2canvas(eventCard, options)
@@ -303,6 +311,9 @@ document.addEventListener('DOMContentLoaded', () => {
           alert('Une erreur est survenue lors de la génération de l\'image. Veuillez réessayer.');
         })
         .finally(() => {
+          // Disable export mode to restore responsive layout
+          document.body.classList.remove('export-mode');
+          
           // Reset button state
           btnDownloadCard.disabled = false;
           btnText.classList.remove('hidden');
