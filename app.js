@@ -257,68 +257,102 @@ document.addEventListener('DOMContentLoaded', () => {
     btnText.classList.add('hidden');
     btnLoadingText.classList.remove('hidden');
 
-    // Short timeout to ensure UI updates before starting canvas heavy operation
-    setTimeout(() => {
-      // Enable export mode to disable transforms and reset layout to 1:1
-      document.body.classList.add('export-mode');
-      
-      // Force layout recalculation (reflow) to apply styling immediately before canvas read
-      const reflow = eventCard.offsetWidth;
+    // 1. Create the off-screen export wrapper
+    const exportWrapper = document.createElement('div');
+    exportWrapper.id = 'export-wrapper';
+    document.body.appendChild(exportWrapper);
 
-      // Config html2canvas options
-      // Target resolution = 800x1000px, scaled by 2 = 1600x2000px
-      const options = {
-        scale: 2,
-        useCORS: true,
-        allowTaint: false,
-        backgroundColor: '#FFFFFF', // Clean white fallback background to prevent transparency edges
-        logging: false,
-        imageTimeout: 15000,
-        removeContainer: true,
-        windowWidth: 800,
-        windowHeight: 1000
-      };
+    // 2. Clone the event card DOM element
+    const cardClone = eventCard.cloneNode(true);
+    cardClone.id = 'event-card-export';
+    // Remove the responsive scaling variable on the clone and reset transforms
+    cardClone.style.setProperty('--card-scale', '1');
+    cardClone.style.transform = 'none';
+    cardClone.style.position = 'relative';
+    cardClone.style.left = '0';
+    cardClone.style.top = '0';
+    exportWrapper.appendChild(cardClone);
 
-      html2canvas(eventCard, options)
-        .then((canvas) => {
-          // Convert to high-quality PNG Data URI
-          const imgData = canvas.toDataURL('image/png', 1.0);
-          
-          // Generate customized download filename
-          const nameInputVal = inputName.value.trim();
-          const cleanName = nameInputVal ? nameInputVal.toLowerCase().replace(/[^a-z0-9]/g, '_') : 'invite';
-          const filename = `ARIF_IA_Participation_${cleanName}.png`;
-
-          // Download Trigger
-          const downloadLink = document.createElement('a');
-          downloadLink.href = imgData;
-          downloadLink.download = filename;
-          document.body.appendChild(downloadLink);
-          downloadLink.click();
-          document.body.removeChild(downloadLink);
-
-          // Success Visual Cue Feedback (Pop element)
-          eventCard.classList.add('success-pop');
-          setTimeout(() => {
-            eventCard.classList.remove('success-pop');
-          }, 600);
-
-          // Show Success Toast Notification
-          showToast();
-        })
-        .catch((error) => {
-          console.error('Erreur d\'exportation avec html2canvas:', error);
-          alert('Une erreur est survenue lors de la génération de l\'image. Veuillez réessayer.');
-        })
-        .finally(() => {
-          // Disable export mode to restore responsive layout
-          document.body.classList.remove('export-mode');
-          
-          // Reset button state
-          btnDownloadCard.disabled = false;
-          btnText.classList.remove('hidden');
-          btnLoadingText.classList.add('hidden');
+    // Helper function to check if all images in the clone are loaded
+    const waitImagesLoaded = () => {
+      const imgs = cardClone.querySelectorAll('img');
+      const promises = Array.from(imgs).map(img => {
+        if (img.complete) return Promise.resolve();
+        return new Promise(resolve => {
+          img.onload = resolve;
+          img.onerror = resolve;
         });
-    }, 350);
+      });
+      return Promise.all(promises);
+    };
+
+    // 3. Wait for Google fonts and images to load completely before capturing
+    const fontsReady = document.fonts ? document.fonts.ready : Promise.resolve();
+
+    Promise.all([fontsReady, waitImagesLoaded()])
+      .then(() => {
+        // Short delay to let browser reflow complete
+        return new Promise(resolve => setTimeout(resolve, 200));
+      })
+      .then(() => {
+        // Config html2canvas options
+        // Target resolution = 800x1000px, scaled by 3 = 2400x3000px
+        const options = {
+          scale: 3, // Ultra-high resolution print quality
+          width: 800,
+          height: 1000,
+          windowWidth: 800,
+          windowHeight: 1000,
+          useCORS: true,
+          allowTaint: false,
+          backgroundColor: '#FFFFFF', // Clean white background fallback
+          logging: false,
+          imageTimeout: 15000,
+          removeContainer: true
+        };
+
+        return html2canvas(cardClone, options);
+      })
+      .then((canvas) => {
+        // Convert to high-quality PNG Data URI
+        const imgData = canvas.toDataURL('image/png', 1.0);
+        
+        // Generate customized download filename
+        const nameInputVal = inputName.value.trim();
+        const cleanName = nameInputVal ? nameInputVal.toLowerCase().replace(/[^a-z0-9]/g, '_') : 'invite';
+        const filename = `ARIF_IA_Participation_${cleanName}.png`;
+
+        // Download Trigger
+        const downloadLink = document.createElement('a');
+        downloadLink.href = imgData;
+        downloadLink.download = filename;
+        document.body.appendChild(downloadLink);
+        downloadLink.click();
+        document.body.removeChild(downloadLink);
+
+        // Success Visual Cue Feedback (Pop element) on the visible preview
+        eventCard.classList.add('success-pop');
+        setTimeout(() => {
+          eventCard.classList.remove('success-pop');
+        }, 600);
+
+        // Show Success Toast Notification
+        showToast();
+      })
+      .catch((error) => {
+        console.error('Erreur d\'exportation avec html2canvas:', error);
+        alert('Une erreur est survenue lors de la génération de l\'image. Veuillez réessayer.');
+      })
+      .finally(() => {
+        // 4. Remove the temporary off-screen wrapper from DOM
+        if (exportWrapper.parentNode) {
+          exportWrapper.parentNode.removeChild(exportWrapper);
+        }
+        
+        // Reset button state
+        btnDownloadCard.disabled = false;
+        btnText.classList.remove('hidden');
+        btnLoadingText.classList.add('hidden');
+      });
   });
 });
