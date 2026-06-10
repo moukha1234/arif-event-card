@@ -340,9 +340,12 @@ document.addEventListener('DOMContentLoaded', () => {
     // STAGE A: BACKGROUND RENDERING (FIRST LAYER)
     // ==========================================================================
 
-    // A.1 Full-canvas white base rectangle to prevent any blank transparent zones
-    ctx.fillStyle = '#FFFFFF';
-    ctx.fillRect(0, 0, 800, 1000);
+    // A.1 Full-canvas base gradient (violet -> beige) to prevent any transparent zones/red borders (BUG 3 FIXED)
+    const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+    gradient.addColorStop(0, "#4B0082"); // violet foncé
+    gradient.addColorStop(1, "#F5F5DC"); // beige clair
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
 
     // A.2 Top-half slate gradient backgrounds
     const grad1 = ctx.createLinearGradient(0, 0, 800, 480);
@@ -560,6 +563,7 @@ document.addEventListener('DOMContentLoaded', () => {
       ctx.quadraticCurveTo(rx, ry + rh, rx, ry + rr);
       ctx.quadraticCurveTo(rx, ry, rx + rr, ry);
     }
+    ctx.closePath(); // Ensure path is properly closed (BUG 3 FIXED)
     ctx.fillStyle = heading.bgColor;
     ctx.fill();
     ctx.strokeStyle = heading.borderColor;
@@ -603,6 +607,7 @@ document.addEventListener('DOMContentLoaded', () => {
       ctx.quadraticCurveTo(rx, ry + rh, rx, ry + rr);
       ctx.quadraticCurveTo(rx, ry, rx + rr, ry);
     }
+    ctx.closePath(); // Ensure path is properly closed (BUG 3 FIXED)
     ctx.fillStyle = details.bgColor;
     ctx.fill();
     ctx.strokeStyle = details.borderColor;
@@ -625,6 +630,7 @@ document.addEventListener('DOMContentLoaded', () => {
       ctx.quadraticCurveTo(rx, ry + rh, rx, ry + rr);
       ctx.quadraticCurveTo(rx, ry, rx + rr, ry);
     }
+    ctx.closePath(); // Ensure path is properly closed (BUG 3 FIXED)
     ctx.fillStyle = 'rgba(226, 0, 122, 0.08)';
     ctx.fill();
     ctx.strokeStyle = 'rgba(226, 0, 122, 0.18)';
@@ -646,6 +652,7 @@ document.addEventListener('DOMContentLoaded', () => {
       ctx.quadraticCurveTo(rx, ry + rh, rx, ry + rr);
       ctx.quadraticCurveTo(rx, ry, rx + rr, ry);
     }
+    ctx.closePath(); // Ensure path is properly closed (BUG 3 FIXED)
     ctx.fillStyle = 'rgba(226, 0, 122, 0.08)';
     ctx.fill();
     ctx.strokeStyle = 'rgba(226, 0, 122, 0.18)';
