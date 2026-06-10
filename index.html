@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="fr">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,11 +8,14 @@
   <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Montserrat:wght@400;500;600;700;800;900&family=Playfair+Display:ital,wght@0,600;0,700;0,800;0,900;1,600&display=swap" rel="stylesheet">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Montserrat:wght@400;500;600;700;800;900&family=Playfair+Display:ital,wght@0,600;0,700;0,800;0,900;1,600&display=swap"
+    rel="stylesheet">
   <link rel="stylesheet" href="style.css">
   <!-- html2canvas CDN -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 </head>
+
 <body>
   <div class="app-container">
     <!-- Main Header -->
@@ -20,25 +24,33 @@
         <!-- Official Inline SVG ARIF Logo for the app header -->
         <svg class="header-logo" viewBox="0 0 280 80" fill="none" xmlns="http://www.w3.org/2000/svg">
           <!-- Logo container card -->
-          <rect x="2" y="2" width="276" height="76" rx="14" fill="#FFFFFF" stroke="#E2E8F0" stroke-width="1.5"/>
+          <rect x="2" y="2" width="276" height="76" rx="14" fill="#FFFFFF" stroke="#E2E8F0" stroke-width="1.5" />
           <!-- Left: Woman Profile Art -->
           <g transform="translate(10, 5)">
-            <circle cx="35" cy="35" r="32" fill="#F8FAFC"/>
-            <path d="M12 60 C12 52, 18 48, 25 46 C28 48, 32 48, 35 46 C42 48, 48 52, 48 60 L46 64 L14 64 Z" fill="#1A1A1A"/>
-            <path d="M18 58 L24 50 M22 60 L27 52 M32 52 L37 60 M35 50 L40 58 M25 46 L30 52 L35 46" stroke="#FFFFFF" stroke-width="1.2" stroke-linecap="round" opacity="0.6"/>
-            <path d="M26 39 L26 47 C28 50, 32 50, 34 48 L34 39 Z" fill="#1A1A1A"/>
-            <path d="M25 36 C24 36, 23 35, 23 34 C23 33, 24 32, 24.5 32 C23.5 31, 23 30, 23 29 C23 27.5, 24.5 27, 25.5 27 C25 26.5, 24.8 25.5, 25.5 25 C26 24.5, 27 24.5, 27.5 25.5 C27 24, 27.5 23, 29 23 C31.5 23, 33 27, 33.5 30 C34 32, 33.5 36, 31 37 C29.5 37.5, 28 37, 27.5 36.5 L27 39 C27 40, 26 40, 25 36 Z" fill="#1A1A1A"/>
-            <circle cx="29" cy="33" r="2" fill="#FFD100"/>
-            <path d="M25 26 C20 18, 26 8, 36 6 C44 4, 48 10, 48 18 C48 24, 44 26, 38 27 C32 28, 28 27, 25 26 Z" fill="#1A1A1A"/>
-            <path d="M25 26 C22 20, 26 12, 32 10 L34 16 Z" fill="#E2007A"/>
-            <path d="M32 10 C35 8, 38 8, 41 9 L38 17 C36 17, 34 16, 32 15 Z" fill="#FFD100"/>
-            <path d="M41 9 C44 10, 47 12, 48 16 L41 20 Z" fill="#009640"/>
-            <path d="M28 24 L45 14 M29 20 L42 11 M33 26 L47 16" stroke="#1A1A1A" stroke-width="1.5"/>
+            <circle cx="35" cy="35" r="32" fill="#F8FAFC" />
+            <path d="M12 60 C12 52, 18 48, 25 46 C28 48, 32 48, 35 46 C42 48, 48 52, 48 60 L46 64 L14 64 Z"
+              fill="#1A1A1A" />
+            <path d="M18 58 L24 50 M22 60 L27 52 M32 52 L37 60 M35 50 L40 58 M25 46 L30 52 L35 46" stroke="#FFFFFF"
+              stroke-width="1.2" stroke-linecap="round" opacity="0.6" />
+            <path d="M26 39 L26 47 C28 50, 32 50, 34 48 L34 39 Z" fill="#1A1A1A" />
+            <path
+              d="M25 36 C24 36, 23 35, 23 34 C23 33, 24 32, 24.5 32 C23.5 31, 23 30, 23 29 C23 27.5, 24.5 27, 25.5 27 C25 26.5, 24.8 25.5, 25.5 25 C26 24.5, 27 24.5, 27.5 25.5 C27 24, 27.5 23, 29 23 C31.5 23, 33 27, 33.5 30 C34 32, 33.5 36, 31 37 C29.5 37.5, 28 37, 27.5 36.5 L27 39 C27 40, 26 40, 25 36 Z"
+              fill="#1A1A1A" />
+            <circle cx="29" cy="33" r="2" fill="#FFD100" />
+            <path d="M25 26 C20 18, 26 8, 36 6 C44 4, 48 10, 48 18 C48 24, 44 26, 38 27 C32 28, 28 27, 25 26 Z"
+              fill="#1A1A1A" />
+            <path d="M25 26 C22 20, 26 12, 32 10 L34 16 Z" fill="#E2007A" />
+            <path d="M32 10 C35 8, 38 8, 41 9 L38 17 C36 17, 34 16, 32 15 Z" fill="#FFD100" />
+            <path d="M41 9 C44 10, 47 12, 48 16 L41 20 Z" fill="#009640" />
+            <path d="M28 24 L45 14 M29 20 L42 11 M33 26 L47 16" stroke="#1A1A1A" stroke-width="1.5" />
           </g>
           <!-- Right: Text Content -->
-          <text x="82" y="38" font-family="'Montserrat', sans-serif" font-weight="800" font-size="28" fill="#E2007A" letter-spacing="1">A.R.I.F</text>
-          <text x="82" y="52" font-family="'Inter', sans-serif" font-weight="700" font-size="7.5" fill="#00A1C9" letter-spacing="0.2">ASSOCIATION POUR LA RÉUSSITE ET</text>
-          <text x="82" y="62" font-family="'Inter', sans-serif" font-weight="700" font-size="7.5" fill="#00A1C9" letter-spacing="0.2">L'INSERTION DES FEMMES</text>
+          <text x="82" y="38" font-family="'Montserrat', sans-serif" font-weight="800" font-size="28" fill="#E2007A"
+            letter-spacing="1">A.R.I.F</text>
+          <text x="82" y="52" font-family="'Inter', sans-serif" font-weight="700" font-size="7.5" fill="#00A1C9"
+            letter-spacing="0.2">ASSOCIATION POUR LA RÉUSSITE ET</text>
+          <text x="82" y="62" font-family="'Inter', sans-serif" font-weight="700" font-size="7.5" fill="#00A1C9"
+            letter-spacing="0.2">L'INSERTION DES FEMMES</text>
         </svg>
       </div>
       <div class="header-title">
@@ -57,7 +69,8 @@
             <div class="form-group">
               <label for="input-name">Nom Complet</label>
               <div class="input-wrapper">
-                <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                  stroke-linecap="round" stroke-linejoin="round">
                   <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
                   <circle cx="12" cy="7" r="4"></circle>
                 </svg>
@@ -71,7 +84,8 @@
               <div class="upload-dropzone" id="dropzone">
                 <input type="file" id="input-image" accept="image/*" class="file-input-hidden">
                 <div class="dropzone-content">
-                  <svg class="upload-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <svg class="upload-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round">
                     <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
                     <polyline points="17 8 12 3 7 8"></polyline>
                     <line x1="12" y1="3" x2="12" y2="15"></line>
@@ -83,7 +97,11 @@
                 <div class="upload-thumbnail-container" id="thumb-container">
                   <img id="upload-thumb" src="" alt="Aperçu">
                   <button type="button" class="btn-remove-image" id="btn-remove-img" title="Supprimer l'image">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                      stroke-linejoin="round">
+                      <line x1="18" y1="6" x2="6" y2="18"></line>
+                      <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
                   </button>
                 </div>
               </div>
@@ -93,7 +111,11 @@
             <div class="adjust-panel collapsed" id="adjust-panel">
               <div class="adjust-header">
                 <span class="adjust-title">
-                  <svg class="adjust-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="16"></line><line x1="8" y1="12" x2="16" y2="12"></line></svg>
+                  <svg class="adjust-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <line x1="12" y1="8" x2="12" y2="16"></line>
+                    <line x1="8" y1="12" x2="16" y2="12"></line>
+                  </svg>
                   Ajuster la photo
                 </span>
                 <span class="adjust-badge">Actif</span>
@@ -128,7 +150,8 @@
             <!-- Reset Button -->
             <div class="form-actions">
               <button type="button" class="btn-reset" id="btn-reset-form">
-                <svg class="reset-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <svg class="reset-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                  stroke-linecap="round" stroke-linejoin="round">
                   <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"></path>
                 </svg>
                 Réinitialiser les données
@@ -140,7 +163,8 @@
         <!-- Action Button -->
         <button type="button" class="btn-download" id="btn-download-card">
           <span class="btn-text">
-            <svg class="download-btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <svg class="download-btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+              stroke-linecap="round" stroke-linejoin="round">
               <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
               <polyline points="7 10 12 15 17 10"></polyline>
               <line x1="12" y1="15" x2="12" y2="3"></line>
@@ -165,13 +189,13 @@
         <div class="card-viewport-wrapper">
           <!-- The real 800x1000px card container, scaled via CSS to fit its parent container -->
           <div class="event-card-container card-export" id="event-card">
-            
+
             <!-- Elegant Card Background Layers -->
             <div class="card-bg-gradient"></div>
             <div class="card-bg-pattern"></div>
             <div class="card-bg-glow-magenta"></div>
             <div class="card-bg-glow-cyan"></div>
-            
+
             <!-- Graduation Ceremony Background Image Container (tinted top half) -->
             <div class="card-top-half-bg"></div>
 
@@ -183,38 +207,49 @@
 
             <!-- Card Content Wrapper -->
             <div class="card-inner">
-              
+
               <!-- Official ARIF Logo (Top Left of Affiche) -->
               <div class="card-logo-area">
                 <svg class="card-logo" viewBox="0 0 280 80" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <!-- Logo container card -->
-                  <rect x="2" y="2" width="276" height="76" rx="14" fill="#FFFFFF" stroke="#E2E8F0" stroke-width="1"/>
+                  <rect x="2" y="2" width="276" height="76" rx="14" fill="#FFFFFF" stroke="#E2E8F0" stroke-width="1" />
                   <!-- Left: Woman Profile Art -->
                   <g transform="translate(10, 5)">
-                    <circle cx="35" cy="35" r="32" fill="#F8FAFC"/>
-                    <path d="M12 60 C12 52, 18 48, 25 46 C28 48, 32 48, 35 46 C42 48, 48 52, 48 60 L46 64 L14 64 Z" fill="#1A1A1A"/>
-                    <path d="M18 58 L24 50 M22 60 L27 52 M32 52 L37 60 M35 50 L40 58 M25 46 L30 52 L35 46" stroke="#FFFFFF" stroke-width="1.2" stroke-linecap="round" opacity="0.6"/>
-                    <path d="M26 39 L26 47 C28 50, 32 50, 34 48 L34 39 Z" fill="#1A1A1A"/>
-                    <path d="M25 36 C24 36, 23 35, 23 34 C23 33, 24 32, 24.5 32 C23.5 31, 23 30, 23 29 C23 27.5, 24.5 27, 25.5 27 C25 26.5, 24.8 25.5, 25.5 25 C26 24.5, 27 24.5, 27.5 25.5 C27 24, 27.5 23, 29 23 C31.5 23, 33 27, 33.5 30 C34 32, 33.5 36, 31 37 C29.5 37.5, 28 37, 27.5 36.5 L27 39 C27 40, 26 40, 25 36 Z" fill="#1A1A1A"/>
-                    <circle cx="29" cy="33" r="2" fill="#FFD100"/>
-                    <path d="M25 26 C20 18, 26 8, 36 6 C44 4, 48 10, 48 18 C48 24, 44 26, 38 27 C32 28, 28 27, 25 26 Z" fill="#1A1A1A"/>
-                    <path d="M25 26 C22 20, 26 12, 32 10 L34 16 Z" fill="#E2007A"/>
-                    <path d="M32 10 C35 8, 38 8, 41 9 L38 17 C36 17, 34 16, 32 15 Z" fill="#FFD100"/>
-                    <path d="M41 9 C44 10, 47 12, 48 16 L41 20 Z" fill="#009640"/>
-                    <path d="M28 24 L45 14 M29 20 L42 11 M33 26 L47 16" stroke="#1A1A1A" stroke-width="1.5"/>
+                    <circle cx="35" cy="35" r="32" fill="#F8FAFC" />
+                    <path d="M12 60 C12 52, 18 48, 25 46 C28 48, 32 48, 35 46 C42 48, 48 52, 48 60 L46 64 L14 64 Z"
+                      fill="#1A1A1A" />
+                    <path d="M18 58 L24 50 M22 60 L27 52 M32 52 L37 60 M35 50 L40 58 M25 46 L30 52 L35 46"
+                      stroke="#FFFFFF" stroke-width="1.2" stroke-linecap="round" opacity="0.6" />
+                    <path d="M26 39 L26 47 C28 50, 32 50, 34 48 L34 39 Z" fill="#1A1A1A" />
+                    <path
+                      d="M25 36 C24 36, 23 35, 23 34 C23 33, 24 32, 24.5 32 C23.5 31, 23 30, 23 29 C23 27.5, 24.5 27, 25.5 27 C25 26.5, 24.8 25.5, 25.5 25 C26 24.5, 27 24.5, 27.5 25.5 C27 24, 27.5 23, 29 23 C31.5 23, 33 27, 33.5 30 C34 32, 33.5 36, 31 37 C29.5 37.5, 28 37, 27.5 36.5 L27 39 C27 40, 26 40, 25 36 Z"
+                      fill="#1A1A1A" />
+                    <circle cx="29" cy="33" r="2" fill="#FFD100" />
+                    <path d="M25 26 C20 18, 26 8, 36 6 C44 4, 48 10, 48 18 C48 24, 44 26, 38 27 C32 28, 28 27, 25 26 Z"
+                      fill="#1A1A1A" />
+                    <path d="M25 26 C22 20, 26 12, 32 10 L34 16 Z" fill="#E2007A" />
+                    <path d="M32 10 C35 8, 38 8, 41 9 L38 17 C36 17, 34 16, 32 15 Z" fill="#FFD100" />
+                    <path d="M41 9 C44 10, 47 12, 48 16 L41 20 Z" fill="#009640" />
+                    <path d="M28 24 L45 14 M29 20 L42 11 M33 26 L47 16" stroke="#1A1A1A" stroke-width="1.5" />
                   </g>
                   <!-- Right: Text Content -->
-                  <text x="82" y="38" font-family="'Montserrat', sans-serif" font-weight="800" font-size="28" fill="#E2007A" letter-spacing="1">A.R.I.F</text>
-                  <text x="82" y="52" font-family="'Inter', sans-serif" font-weight="700" font-size="7.5" fill="#00A1C9" letter-spacing="0.2">ASSOCIATION POUR LA RÉUSSITE ET</text>
-                  <text x="82" y="62" font-family="'Inter', sans-serif" font-weight="700" font-size="7.5" fill="#00A1C9" letter-spacing="0.2">L'INSERTION DES FEMMES</text>
+                  <text x="82" y="38" font-family="'Montserrat', sans-serif" font-weight="800" font-size="28"
+                    fill="#E2007A" letter-spacing="1">A.R.I.F</text>
+                  <text x="82" y="52" font-family="'Inter', sans-serif" font-weight="700" font-size="7.5" fill="#00A1C9"
+                    letter-spacing="0.2">ASSOCIATION POUR LA RÉUSSITE ET</text>
+                  <text x="82" y="62" font-family="'Inter', sans-serif" font-weight="700" font-size="7.5" fill="#00A1C9"
+                    letter-spacing="0.2">L'INSERTION DES FEMMES</text>
                 </svg>
               </div>
 
               <!-- Official-looking Date Scalloped Seal (Top Right, matching image) -->
               <div class="card-scalloped-badge">
                 <svg class="scalloped-bg" viewBox="0 0 100 100">
-                  <path d="M50 0 L54 6 L60 2 L63 9 L70 6 L72 13 L79 11 L80 18 L87 17 L86 24 L92 25 L90 32 L95 35 L92 41 L96 46 L92 51 L95 57 L90 61 L92 68 L86 70 L87 77 L80 77 L79 84 L72 82 L70 89 L63 86 L60 93 L54 89 L50 95 L46 89 L40 93 L37 86 L30 89 L28 82 L21 84 L20 77 L13 77 L14 70 L8 68 L10 61 L5 57 L8 51 L4 46 L8 41 L5 35 L10 32 L8 25 L14 24 L13 17 L20 18 L21 11 L28 13 L30 6 L37 9 L40 2 L46 6 Z" fill="#FFFFFF" stroke="#E2007A" stroke-width="2"/>
-                  <circle cx="50" cy="50" r="41" fill="none" stroke="#E2007A" stroke-width="1.5" stroke-dasharray="3 3"/>
+                  <path
+                    d="M50 0 L54 6 L60 2 L63 9 L70 6 L72 13 L79 11 L80 18 L87 17 L86 24 L92 25 L90 32 L95 35 L92 41 L96 46 L92 51 L95 57 L90 61 L92 68 L86 70 L87 77 L80 77 L79 84 L72 82 L70 89 L63 86 L60 93 L54 89 L50 95 L46 89 L40 93 L37 86 L30 89 L28 82 L21 84 L20 77 L13 77 L14 70 L8 68 L10 61 L5 57 L8 51 L4 46 L8 41 L5 35 L10 32 L8 25 L14 24 L13 17 L20 18 L21 11 L28 13 L30 6 L37 9 L40 2 L46 6 Z"
+                    fill="#FFFFFF" stroke="#E2007A" stroke-width="2" />
+                  <circle cx="50" cy="50" r="41" fill="none" stroke="#E2007A" stroke-width="1.5"
+                    stroke-dasharray="3 3" />
                 </svg>
                 <div class="scalloped-content">
                   <span class="scalloped-day">20</span>
@@ -230,7 +265,8 @@
                     <div class="profile-image-container">
                       <!-- Default placeholder SVG which is hidden when custom user upload is loaded -->
                       <div class="profile-placeholder" id="preview-placeholder">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"
+                          stroke-linecap="round" stroke-linejoin="round">
                           <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
                           <circle cx="12" cy="7" r="4"></circle>
                         </svg>
@@ -242,7 +278,9 @@
                   <!-- Floating Gold Badge on Frame -->
                   <div class="profile-gold-seal">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                      <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                      <polygon
+                        points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2">
+                      </polygon>
                     </svg>
                   </div>
                 </div>
@@ -252,15 +290,19 @@
               <div class="torn-paper-divider">
                 <svg viewBox="0 0 800 40" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
                   <!-- Gray shadow simulation -->
-                  <path d="M0 10 L 22 12 L 45 8 L 68 15 L 90 10 L 112 13 L 135 7 L 158 12 L 180 9 L 202 15 L 225 8 L 248 12 L 270 7 L 292 14 L 315 9 L 338 13 L 360 8 L 382 12 L 405 10 L 428 15 L 450 8 L 472 12 L 495 9 L 518 14 L 540 8 L 562 13 L 585 10 L 608 15 L 630 7 L 652 12 L 675 9 L 698 14 L 720 8 L 742 12 L 765 7 L 788 13 L 800 10 L 800 40 L 0 40 Z" fill="#D8D8DF" opacity="0.6"/>
+                  <path
+                    d="M0 10 L 22 12 L 45 8 L 68 15 L 90 10 L 112 13 L 135 7 L 158 12 L 180 9 L 202 15 L 225 8 L 248 12 L 270 7 L 292 14 L 315 9 L 338 13 L 360 8 L 382 12 L 405 10 L 428 15 L 450 8 L 472 12 L 495 9 L 518 14 L 540 8 L 562 13 L 585 10 L 608 15 L 630 7 L 652 12 L 675 9 L 698 14 L 720 8 L 742 12 L 765 7 L 788 13 L 800 10 L 800 40 L 0 40 Z"
+                    fill="#D8D8DF" opacity="0.6" />
                   <!-- White crumpled paper layer -->
-                  <path d="M0 16 L 20 18 L 40 13 L 60 20 L 80 14 L 100 17 L 120 11 L 140 16 L 160 13 L 180 20 L 200 12 L 220 16 L 240 11 L 260 19 L 280 13 L 300 17 L 320 12 L 340 16 L 360 14 L 380 20 L 400 12 L 420 16 L 440 13 L 460 19 L 480 12 L 500 16 L 520 13 L 540 20 L 560 11 L 580 16 L 600 13 L 620 19 L 640 12 L 660 16 L 680 11 L 700 18 L 720 13 L 740 20 L 760 12 L 780 16 L 800 14 L 800 40 L 0 40 Z" fill="#FAF9F6"/>
+                  <path
+                    d="M0 16 L 20 18 L 40 13 L 60 20 L 80 14 L 100 17 L 120 11 L 140 16 L 160 13 L 180 20 L 200 12 L 220 16 L 240 11 L 260 19 L 280 13 L 300 17 L 320 12 L 340 16 L 360 14 L 380 20 L 400 12 L 420 16 L 440 13 L 460 19 L 480 12 L 500 16 L 520 13 L 540 20 L 560 11 L 580 16 L 600 13 L 620 19 L 640 12 L 660 16 L 680 11 L 700 18 L 720 13 L 740 20 L 760 12 L 780 16 L 800 14 L 800 40 L 0 40 Z"
+                    fill="#FAF9F6" />
                 </svg>
               </div>
 
               <!-- Lower White Paper Section Content -->
               <div class="card-lower-content">
-                
+
                 <!-- Dot Grid Decorative (Bottom Left) -->
                 <div class="dot-grid bottom-left-dots">
                   <span></span><span></span><span></span><span></span><span></span><span></span>
@@ -274,15 +316,17 @@
                     <span class="badge-text">CONFIRMATION DE PARTICIPATION</span>
                     <span class="badge-accent"></span>
                   </div>
-                  
+
                   <p class="salutation">Je soussigné(e)</p>
-                  
+
                   <div class="name-container">
                     <h2 id="card-user-name" class="user-name-output">Votre Nom Complet</h2>
                   </div>
-                  
+
                   <p class="confirmation-statement">
-                    confirme ma participation à la journée de formation en <span class="highlight-text">Intelligence Artificielle</span> organisée par ARIF 
+                    confirme ma participation à la journée de <span class="highlight-text">Remise des
+                      Attestations</span> de fin de formation en <span class="highlight-text">Intelligence
+                      Artificielle</span> organisée par ARIF
                     <span class="org-subtitle">(Association pour la Réussite et l’Insertion des Femmes)</span>
                   </p>
                 </div>
@@ -291,7 +335,8 @@
                 <div class="card-event-details">
                   <div class="detail-item">
                     <div class="detail-icon-box">
-                      <svg class="detail-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                      <svg class="detail-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                        stroke-linecap="round" stroke-linejoin="round">
                         <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
                         <circle cx="12" cy="10" r="3"></circle>
                       </svg>
@@ -304,7 +349,8 @@
 
                   <div class="detail-item">
                     <div class="detail-icon-box">
-                      <svg class="detail-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                      <svg class="detail-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                        stroke-linecap="round" stroke-linejoin="round">
                         <circle cx="12" cy="12" r="10"></circle>
                         <polyline points="12 6 12 12 16 14"></polyline>
                       </svg>
@@ -339,7 +385,8 @@
   <div id="toast-success" class="toast hidden">
     <div class="toast-content">
       <div class="toast-icon-wrapper">
-        <svg class="toast-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+        <svg class="toast-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"
+          stroke-linecap="round" stroke-linejoin="round">
           <polyline points="20 6 9 17 4 12"></polyline>
         </svg>
       </div>
@@ -348,7 +395,11 @@
         <p class="toast-desc">Votre affiche est prête à être partagée sur WhatsApp.</p>
       </div>
       <button type="button" class="toast-close" id="btn-close-toast" title="Fermer">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+          stroke-linejoin="round">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
       </button>
     </div>
   </div>
@@ -356,4 +407,5 @@
   <script src="layout-config.js"></script>
   <script src="app.js"></script>
 </body>
+
 </html>
