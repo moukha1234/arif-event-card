@@ -1,3 +1,14 @@
+window.onerror = function(message, source, lineno, colno, error) {
+    console.error("GLOBAL ERROR:", {
+        message,
+        source,
+        lineno,
+        colno,
+        error,
+        stack: error?.stack
+    });
+};
+
 /* ==========================================================================
    ARIF EVENT CARD GENERATOR - CONTROLLER LOGIC
    ========================================================================== */
@@ -340,27 +351,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
   btnDownloadCard.addEventListener('click', () => {
     console.log("STEP 1 - Start export");
-    
-    const nameVal = inputName.value.trim() || "Votre Nom";
-    const displayName = nameVal.toUpperCase();
-    let nameFontSize = 42;
-
-    if (displayName.length > 18) {
-      nameFontSize = 36;
-    }
-    if (displayName.length > 26) {
-      nameFontSize = 30;
-    }
-    if (displayName.length > 34) {
-      nameFontSize = 24;
-    }
-
-    console.log({
-      nameVal,
-      displayName,
-      nameFontSize
-    });
-
     const btnText = btnDownloadCard.querySelector('.btn-text');
     const btnLoadingText = btnDownloadCard.querySelector('.btn-loading-text');
 
@@ -983,13 +973,15 @@ document.addEventListener('DOMContentLoaded', () => {
         showToast();
       })
       .catch((error) => {
-        console.error("EXPORT ERROR:", error);
+        console.error("EXPORT ERROR FULL:", error);
         console.error("STACK:", error?.stack);
 
         alert(
-          "Erreur export :\n\n" +
+          "EXPORT ERROR:\n\n" +
           (error?.message || error)
         );
+
+        throw error;
       })
       .finally(() => {
         btnDownloadCard.disabled = false;
