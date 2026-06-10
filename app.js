@@ -61,7 +61,6 @@ document.addEventListener('DOMContentLoaded', () => {
   // 2. NAME FIELD LIVE UPDATE & AUTO-SHRINK TEXT FONT SIZE
   // ==========================================================================
   const calculateFontSize = (nameOrLength) => {
-    // Accepte un string (utilise .length) ou un nombre directement
     const len = typeof nameOrLength === 'string' ? nameOrLength.length : nameOrLength;
     if (len <= 18) return 40;
     if (len <= 25) return 32;
