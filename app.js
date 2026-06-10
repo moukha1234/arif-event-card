@@ -1,14 +1,3 @@
-window.onerror = function(message, source, lineno, colno, error) {
-    console.error("GLOBAL ERROR:", {
-        message,
-        source,
-        lineno,
-        colno,
-        error,
-        stack: error?.stack
-    });
-};
-
 /* ==========================================================================
    ARIF EVENT CARD GENERATOR - CONTROLLER LOGIC
    ========================================================================== */
@@ -350,7 +339,23 @@ document.addEventListener('DOMContentLoaded', () => {
   };
 
   btnDownloadCard.addEventListener('click', () => {
-    console.log("STEP 1 - Start export");
+    const nameVal = inputName.value.trim() || "Votre Nom";
+    const displayName = nameVal.toUpperCase();
+
+    let nameFontSize = 42;
+
+    if (displayName.length > 18) {
+        nameFontSize = 36;
+    }
+
+    if (displayName.length > 26) {
+        nameFontSize = 30;
+    }
+
+    if (displayName.length > 34) {
+        nameFontSize = 24;
+    }
+
     const btnText = btnDownloadCard.querySelector('.btn-text');
     const btnLoadingText = btnDownloadCard.querySelector('.btn-loading-text');
 
@@ -367,7 +372,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     fontsReady
       .then(() => {
-        console.log("STEP 2 - Fonts loaded");
         // Query elements from the visible card
         const logoSvg = document.querySelector('.card-logo');
         const scallopedSvg = document.querySelector('.scalloped-bg');
@@ -407,7 +411,11 @@ document.addEventListener('DOMContentLoaded', () => {
         return Promise.all([...svgPromises, userImgPromise, placeholderPromise]);
       })
       .then(([logoImg, scallopedImg, starImg, pinImg, clockImg, userImg, placeholderImg]) => {
-        console.log("STEP 3 - SVG rendered");
+        console.log({
+            nameVal,
+            displayName,
+            nameFontSize
+        });
         // 1. SETUP CANVAS & RESOLUTION SCALING
         const dpr = window.devicePixelRatio || 1;
         const canvas = document.createElement('canvas');
@@ -802,7 +810,6 @@ document.addEventListener('DOMContentLoaded', () => {
           }
         }
         ctx.restore(); // Restore clipping context
-        console.log("STEP 4 - Avatar rendered");
 
         // C.4 Floating Star Icon (on the status seal)
         if (starImg) {
@@ -941,7 +948,6 @@ document.addEventListener('DOMContentLoaded', () => {
         ctx.letterSpacing = "0px";
         ctx.fillText("À partir de 15h", text2X, detailsY + 64);
         ctx.restore();
-        console.log("STEP 5 - Text rendered");
 
         // ==========================================================================
         // STAGE E: TEMPORARY RED DEBUG BORDER (DEBUG VISUAL LIMITS)
@@ -950,7 +956,6 @@ document.addEventListener('DOMContentLoaded', () => {
         ctx.lineWidth = 4;
         ctx.strokeRect(0, 0, 800, 1000);
 
-        console.log("STEP 6 - PNG generation");
         // 8. Convert to PNG Data URI & Download
         const imgData = canvas.toDataURL('image/png', 1.0);
         
@@ -973,15 +978,8 @@ document.addEventListener('DOMContentLoaded', () => {
         showToast();
       })
       .catch((error) => {
-        console.error("EXPORT ERROR FULL:", error);
-        console.error("STACK:", error?.stack);
-
-        alert(
-          "EXPORT ERROR:\n\n" +
-          (error?.message || error)
-        );
-
-        throw error;
+        console.error("EXPORT ERROR:", error);
+        alert("Une erreur est survenue lors de la génération de l'image. Veuillez réessayer.");
       })
       .finally(() => {
         btnDownloadCard.disabled = false;
