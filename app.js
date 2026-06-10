@@ -663,11 +663,48 @@ document.addEventListener('DOMContentLoaded', () => {
     // STAGE C: IMAGES RENDERING (THIRD LAYER)
     // ==========================================================================
 
-    // C.1 Logo
+    // C.1 Logo (with white card container)
     if (logoImg) {
       const logoX = clamp(LayoutConfig.logo.x, 0, 800);
       const logoY = clamp(LayoutConfig.logo.y, 0, 1000);
-      ctx.drawImage(logoImg, logoX, logoY, LayoutConfig.logo.width, LayoutConfig.logo.height);
+      
+      const boxHeight = 76;
+      const logoHeight = 56;
+      const paddingY = (boxHeight - logoHeight) / 2; // 10px
+      const paddingX = 16;
+      
+      const imgW = logoImg.naturalWidth || logoImg.width;
+      const imgH = logoImg.naturalHeight || logoImg.height;
+      const ratio = imgW / imgH;
+      
+      const logoWidth = logoHeight * ratio;
+      const boxWidth = logoWidth + paddingX * 2;
+      
+      // Draw white container box with rounded corners
+      ctx.save();
+      ctx.beginPath();
+      if (ctx.roundRect) {
+        ctx.roundRect(logoX, logoY, boxWidth, boxHeight, 14);
+      } else {
+        const rx = logoX, ry = logoY, rw = boxWidth, rh = boxHeight, rr = 14;
+        ctx.moveTo(rx + rr, ry);
+        ctx.lineTo(rx + rw - rr, ry);
+        ctx.quadraticCurveTo(rx + rw, ry, rx + rw, ry + rr);
+        ctx.quadraticCurveTo(rx + rw, ry + rh, rx + rw - rr, ry + rh);
+        ctx.lineTo(rx + rr, ry + rh);
+        ctx.quadraticCurveTo(rx, ry + rh, rx, ry + rr);
+        ctx.quadraticCurveTo(rx, ry, rx + rr, ry);
+      }
+      ctx.closePath();
+      ctx.fillStyle = '#FFFFFF';
+      ctx.fill();
+      ctx.strokeStyle = '#E2E8F0';
+      ctx.lineWidth = 1;
+      ctx.stroke();
+      
+      // Draw logo image inside
+      ctx.drawImage(logoImg, logoX + paddingX, logoY + paddingY, logoWidth, logoHeight);
+      ctx.restore();
     }
 
     // C.2 Scalloped Date Badge shape
@@ -736,14 +773,14 @@ document.addEventListener('DOMContentLoaded', () => {
     // STAGE D: TEXTS RENDERING (FOURTH LAYER)
     // ==========================================================================
 
-    // D.0 Cursive Text "J'y Serai" (Top Center, between logo and date badge)
+    // D.0 "J'y Serai" Title (Centered)
     ctx.save();
-    ctx.font = "bold 48px 'Pacifico', 'Brush Script MT', cursive";
+    ctx.font = "bold 48px 'Brush Script MT', cursive";
     ctx.fillStyle = "#FFFFFF";
     ctx.shadowColor = "#4B0082";
     ctx.shadowBlur = 6;
     ctx.shadowOffsetX = 0;
-    ctx.shadowOffsetY = 0;
+    ctx.shadowOffsetY = 2;
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
     ctx.fillText("J'y Serai", 400, 180);
@@ -922,21 +959,28 @@ document.addEventListener('DOMContentLoaded', () => {
       }
 
       // Query elements from the visible card
-      const logoSvg = document.querySelector('.card-logo');
       const scallopedSvg = document.querySelector('.scalloped-bg');
       const starSvg = document.querySelector('.profile-gold-seal svg');
       const detailIcons = document.querySelectorAll('.detail-icon');
       const pinSvg = detailIcons[0];
       const clockSvg = detailIcons[1];
       
-      // Serialized images
+      // Serialized images (excluding logo since it is loaded from cropped image file directly)
       const svgPromises = [
-        svgToImage(logoSvg, LayoutConfig.logo.width, LayoutConfig.logo.height),
         svgToImage(scallopedSvg, LayoutConfig.dateBadge.width, LayoutConfig.dateBadge.height),
         svgToImage(starSvg, 22, 22),
         svgToImage(pinSvg, 22, 22),
         svgToImage(clockSvg, 22, 22)
       ];
+
+      // Real cropped logo image
+      const logoImgPromise = new Promise((resolve) => {
+        const img = new Image();
+        img.crossOrigin = 'anonymous';
+        img.onload = () => resolve(img);
+        img.onerror = () => resolve(null);
+        img.src = 'logo-arif-cropped.jpg';
+      });
 
       // User uploaded image
       let userImgPromise = Promise.resolve(null);
@@ -957,8 +1001,9 @@ document.addEventListener('DOMContentLoaded', () => {
       const placeholderSvg = document.querySelector('#preview-placeholder svg');
       const placeholderPromise = svgToImage(placeholderSvg, 110, 110);
 
-      const [logoImg, scallopedImg, starImg, pinImg, clockImg, userImg, placeholderImg] = await Promise.all([
+      const [scallopedImg, starImg, pinImg, clockImg, logoImg, userImg, placeholderImg] = await Promise.all([
         ...svgPromises,
+        logoImgPromise,
         userImgPromise,
         placeholderPromise
       ]);

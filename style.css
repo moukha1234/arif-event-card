@@ -750,26 +750,36 @@ input[type="range"]::-webkit-slider-thumb:hover {
   z-index: 6;
 }
 
+.card-logo-container-box {
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 14px;
+  padding: 10px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
 .card-logo {
-  height: 72px;
+  height: 56px;
   width: auto;
   display: block;
-  filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.15));
 }
 
 .card-jy-serai {
   position: absolute;
-  top: 180px;
+  top: 150px;
   left: 50%;
-  transform: translate(-50%, -50%);
-  font-family: 'Pacifico', 'Brush Script MT', cursive;
-  font-size: 48px;
+  transform: translateX(-50%);
+  font-family: 'Brush Script MT', 'Playfair Display', cursive, serif;
+  font-size: 54px;
   font-weight: bold;
   color: #FFFFFF;
-  text-shadow: 0 0 6px #4B0082, 0 0 6px #4B0082;
-  text-align: center;
+  text-shadow: 0 0 8px #4B0082, 0 2px 10px rgba(75, 0, 130, 0.7);
   z-index: 6;
   pointer-events: none;
+  letter-spacing: 1px;
 }
 
 /* Scalloped Date Seal Badge (Top Right, matching image) */

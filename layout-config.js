@@ -27,7 +27,7 @@ const LayoutConfig = {
   logo: {
     x: 45,
     y: 40,
-    width: 266,
+    width: 276,
     height: 76
   },
   
