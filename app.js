@@ -60,16 +60,16 @@ document.addEventListener('DOMContentLoaded', () => {
   // ==========================================================================
   // 2. NAME FIELD LIVE UPDATE & AUTO-SHRINK TEXT FONT SIZE
   // ==========================================================================
+  const calculateFontSize = (name) => {
+    const len = name.length;
+    if (len <= 18) return 40;
+    if (len <= 25) return 32;
+    if (len <= 35) return 26;
+    return 20;
+  };
+
   const updateNameFontSize = (nameLength) => {
-    if (nameLength <= 18) {
-      cardUserName.style.fontSize = '40px';
-    } else if (nameLength <= 25) {
-      cardUserName.style.fontSize = '32px';
-    } else if (nameLength <= 35) {
-      cardUserName.style.fontSize = '26px';
-    } else {
-      cardUserName.style.fontSize = '20px';
-    }
+    cardUserName.style.fontSize = `${calculateFontSize({ length: nameLength })}px`;
   };
 
   inputName.addEventListener('input', (e) => {
@@ -338,23 +338,10 @@ document.addEventListener('DOMContentLoaded', () => {
     return currentY;
   };
 
-  btnDownloadCard.addEventListener('click', () => {
-    const nameVal = inputName.value.trim() || "Votre Nom";
-    const displayName = nameVal.toUpperCase();
-
-    let nameFontSize = 42;
-
-    if (displayName.length > 18) {
-        nameFontSize = 36;
-    }
-
-    if (displayName.length > 26) {
-        nameFontSize = 30;
-    }
-
-    if (displayName.length > 34) {
-        nameFontSize = 24;
-    }
+  btnDownloadCard.addEventListener('click', async () => {
+    const nameVal = inputName.value.trim();
+    const displayName = nameVal ? nameVal.toUpperCase() : "PARTICIPANT";
+    const nameFontSize = calculateFontSize(displayName);
 
     const btnText = btnDownloadCard.querySelector('.btn-text');
     const btnLoadingText = btnDownloadCard.querySelector('.btn-loading-text');
@@ -367,50 +354,53 @@ document.addEventListener('DOMContentLoaded', () => {
     // Helper to clamp values between min and max
     const clamp = (val, min, max) => Math.max(min, Math.min(max, val));
 
-    // Wait for Google fonts and images to load completely before capturing
-    const fontsReady = document.fonts ? document.fonts.ready : Promise.resolve();
+    try {
+      // Wait for Google fonts and images to load completely before capturing
+      if (document.fonts) {
+        await document.fonts.ready;
+      }
 
-    fontsReady
-      .then(() => {
-        // Query elements from the visible card
-        const logoSvg = document.querySelector('.card-logo');
-        const scallopedSvg = document.querySelector('.scalloped-bg');
-        const starSvg = document.querySelector('.profile-gold-seal svg');
-        const detailIcons = document.querySelectorAll('.detail-icon');
-        const pinSvg = detailIcons[0];
-        const clockSvg = detailIcons[1];
-        
-        // Serialized images
-        const svgPromises = [
-          svgToImage(logoSvg, LayoutConfig.logo.width, LayoutConfig.logo.height),
-          svgToImage(scallopedSvg, LayoutConfig.dateBadge.width, LayoutConfig.dateBadge.height),
-          svgToImage(starSvg, 22, 22),
-          svgToImage(pinSvg, 22, 22),
-          svgToImage(clockSvg, 22, 22)
-        ];
+      // Query elements from the visible card
+      const logoSvg = document.querySelector('.card-logo');
+      const scallopedSvg = document.querySelector('.scalloped-bg');
+      const starSvg = document.querySelector('.profile-gold-seal svg');
+      const detailIcons = document.querySelectorAll('.detail-icon');
+      const pinSvg = detailIcons[0];
+      const clockSvg = detailIcons[1];
+      
+      // Serialized images
+      const svgPromises = [
+        svgToImage(logoSvg, LayoutConfig.logo.width, LayoutConfig.logo.height),
+        svgToImage(scallopedSvg, LayoutConfig.dateBadge.width, LayoutConfig.dateBadge.height),
+        svgToImage(starSvg, 22, 22),
+        svgToImage(pinSvg, 22, 22),
+        svgToImage(clockSvg, 22, 22)
+      ];
 
-        // User uploaded image
-        let userImgPromise = Promise.resolve(null);
-        const userImgSrc = previewUserImg.src;
-        const hasUserImage = userImgSrc && !previewUserImg.classList.contains('hidden');
-        
-        if (hasUserImage) {
-          userImgPromise = new Promise((resolve) => {
-            const img = new Image();
-            img.crossOrigin = 'anonymous';
-            img.onload = () => resolve(img);
-            img.onerror = () => resolve(null);
-            img.src = userImgSrc;
-          });
-        }
+      // User uploaded image
+      let userImgPromise = Promise.resolve(null);
+      const userImgSrc = previewUserImg.src;
+      const hasUserImage = userImgSrc && !previewUserImg.classList.contains('hidden');
+      
+      if (hasUserImage) {
+        userImgPromise = new Promise((resolve) => {
+          const img = new Image();
+          img.crossOrigin = 'anonymous';
+          img.onload = () => resolve(img);
+          img.onerror = () => resolve(null);
+          img.src = userImgSrc;
+        });
+      }
 
-        // Placeholder image
-        const placeholderSvg = document.querySelector('#preview-placeholder svg');
-        const placeholderPromise = svgToImage(placeholderSvg, 110, 110);
+      // Placeholder image
+      const placeholderSvg = document.querySelector('#preview-placeholder svg');
+      const placeholderPromise = svgToImage(placeholderSvg, 110, 110);
 
-        return Promise.all([...svgPromises, userImgPromise, placeholderPromise]);
-      })
-      .then(([logoImg, scallopedImg, starImg, pinImg, clockImg, userImg, placeholderImg]) => {
+      const [logoImg, scallopedImg, starImg, pinImg, clockImg, userImg, placeholderImg] = await Promise.all([
+        ...svgPromises,
+        userImgPromise,
+        placeholderPromise
+      ]);
         console.log({
             nameVal,
             displayName,
@@ -956,18 +946,44 @@ document.addEventListener('DOMContentLoaded', () => {
         ctx.lineWidth = 4;
         ctx.strokeRect(0, 0, 800, 1000);
 
-        // 8. Convert to PNG Data URI & Download
-        const imgData = canvas.toDataURL('image/png', 1.0);
-        
-        const cleanName = nameVal ? nameVal.toLowerCase().replace(/[^a-z0-9]/g, '_') : 'invite';
-        const filename = `ARIF_IA_Participation_${cleanName}.png`;
+        // 8. Convert to PNG Blob & Download via toBlob
+        const photoCoords = {
+          x: clamp(parseFloat(sliderX.value), -150, 150),
+          y: clamp(parseFloat(sliderY.value), -150, 150),
+          zoom: clamp(sliderZoom.value / 100, 0.5, 3.0)
+        };
 
-        const downloadLink = document.createElement('a');
-        downloadLink.href = imgData;
-        downloadLink.download = filename;
-        document.body.appendChild(downloadLink);
-        downloadLink.click();
-        document.body.removeChild(downloadLink);
+        console.log("Pre-export validation details:", {
+          displayName,
+          nameFontSize,
+          photoCoords,
+          canvasWidth: canvas.width,
+          canvasHeight: canvas.height
+        });
+
+        await new Promise((resolve, reject) => {
+          canvas.toBlob((blob) => {
+            if (!blob) {
+              reject(new Error("Blob generation failed"));
+              return;
+            }
+            const cleanName = nameVal ? nameVal.toLowerCase().replace(/[^a-z0-9]/g, '_') : 'invite';
+            const filename = `ARIF_IA_Participation_${cleanName}.png`;
+
+            const url = URL.createObjectURL(blob);
+            const downloadLink = document.createElement('a');
+            downloadLink.download = filename;
+            downloadLink.href = url;
+            
+            document.body.appendChild(downloadLink);
+            downloadLink.click();
+            document.body.removeChild(downloadLink);
+
+            // Revoke the object URL after a short timeout to prevent memory leak
+            setTimeout(() => URL.revokeObjectURL(url), 100);
+            resolve();
+          }, "image/png");
+        });
 
         // Visual feedback
         eventCard.classList.add('success-pop');
@@ -976,15 +992,14 @@ document.addEventListener('DOMContentLoaded', () => {
         }, 600);
 
         showToast();
-      })
-      .catch((error) => {
-        console.error("EXPORT ERROR:", error);
-        alert("Une erreur est survenue lors de la génération de l'image. Veuillez réessayer.");
-      })
-      .finally(() => {
-        btnDownloadCard.disabled = false;
-        btnText.classList.remove('hidden');
-        btnLoadingText.classList.add('hidden');
-      });
+
+    } catch (error) {
+      console.error("EXPORT ERROR:", error);
+      alert("Une erreur est survenue lors de la génération de l'image. Veuillez réessayer.");
+    } finally {
+      btnDownloadCard.disabled = false;
+      btnText.classList.remove('hidden');
+      btnLoadingText.classList.add('hidden');
+    }
   });
 });
