@@ -736,6 +736,19 @@ document.addEventListener('DOMContentLoaded', () => {
     // STAGE D: TEXTS RENDERING (FOURTH LAYER)
     // ==========================================================================
 
+    // D.0 Cursive Text "J'y Serai" (Top Center, between logo and date badge)
+    ctx.save();
+    ctx.font = "bold 48px 'Pacifico', 'Brush Script MT', cursive";
+    ctx.fillStyle = "#FFFFFF";
+    ctx.shadowColor = "#4B0082";
+    ctx.shadowBlur = 6;
+    ctx.shadowOffsetX = 0;
+    ctx.shadowOffsetY = 0;
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText("J'y Serai", 400, 180);
+    ctx.restore();
+
     // D.1 Scalloped Date Badge Content Texts
     const dayText = document.querySelector('.scalloped-day') ? document.querySelector('.scalloped-day').textContent.trim() : "20";
     const monthText = document.querySelector('.scalloped-month') ? document.querySelector('.scalloped-month').textContent.trim() : "JUIN";

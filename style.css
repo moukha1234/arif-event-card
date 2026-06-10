@@ -757,6 +757,21 @@ input[type="range"]::-webkit-slider-thumb:hover {
   filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.15));
 }
 
+.card-jy-serai {
+  position: absolute;
+  top: 180px;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-family: 'Pacifico', 'Brush Script MT', cursive;
+  font-size: 48px;
+  font-weight: bold;
+  color: #FFFFFF;
+  text-shadow: 0 0 6px #4B0082, 0 0 6px #4B0082;
+  text-align: center;
+  z-index: 6;
+  pointer-events: none;
+}
+
 /* Scalloped Date Seal Badge (Top Right, matching image) */
 .card-scalloped-badge {
   position: absolute;
