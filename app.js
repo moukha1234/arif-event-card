@@ -824,7 +824,7 @@ document.addEventListener('DOMContentLoaded', () => {
             });
           }
         } else if (node.nodeType === Node.ELEMENT_NODE) {
-          const isHighlight = node.classList.contains('highlight-text');
+          const isHighlight = node.classList.contains('highlight-text') || node.classList.contains('highlight-texte');
           segments.push({
             text: text,
             font: isHighlight ? boldFont : defaultFont,
