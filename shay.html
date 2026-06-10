@@ -1,0 +1,1012 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Administration - ARIF Event Card</title>
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Montserrat:wght@600;700;800;900&display=swap"
+    rel="stylesheet">
+  
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+
+  <style>
+    :root {
+      --color-primary: #E2007A;
+      --color-secondary: #00A1C9;
+      --color-dark: #0F172A;
+      --color-light: #F8FAFC;
+      --color-border: #E2E8F0;
+      --color-text-muted: #64748B;
+      --color-success: #10B981;
+      --color-danger: #EF4444;
+      --font-title: 'Montserrat', sans-serif;
+      --font-body: 'Inter', sans-serif;
+      --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: var(--font-body);
+      background-color: #F1F5F9;
+      color: var(--color-dark);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Auth Screen styling */
+    .auth-container {
+      margin: auto;
+      width: 100%;
+      max-width: 420px;
+      padding: 2rem;
+    }
+
+    .auth-card {
+      background: #FFFFFF;
+      border-radius: 24px;
+      padding: 2.5rem 2rem;
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+      border: 1px solid var(--color-border);
+      text-align: center;
+    }
+
+    .auth-logo {
+      width: 140px;
+      height: auto;
+      margin-bottom: 1.5rem;
+    }
+
+    .auth-title {
+      font-family: var(--font-title);
+      font-weight: 800;
+      font-size: 1.5rem;
+      color: var(--color-primary);
+      margin-bottom: 0.5rem;
+    }
+
+    .auth-desc {
+      font-size: 0.875rem;
+      color: var(--color-text-muted);
+      margin-bottom: 2rem;
+    }
+
+    .form-group {
+      margin-bottom: 1.5rem;
+      text-align: left;
+    }
+
+    .form-label {
+      display: block;
+      font-weight: 600;
+      font-size: 0.85rem;
+      margin-bottom: 0.5rem;
+      color: var(--color-dark);
+    }
+
+    .form-input {
+      width: 100%;
+      padding: 0.85rem 1rem;
+      border-radius: 12px;
+      border: 1.5px solid var(--color-border);
+      font-family: var(--font-body);
+      font-size: 0.95rem;
+      transition: var(--transition-smooth);
+      outline: none;
+    }
+
+    .form-input:focus {
+      border-color: var(--color-primary);
+      box-shadow: 0 0 0 3px rgba(226, 0, 74, 0.1);
+    }
+
+    .btn-submit {
+      width: 100%;
+      background: var(--color-primary);
+      color: #FFFFFF;
+      border: none;
+      padding: 0.85rem;
+      border-radius: 12px;
+      font-family: var(--font-title);
+      font-weight: 700;
+      font-size: 0.95rem;
+      cursor: pointer;
+      transition: var(--transition-smooth);
+    }
+
+    .btn-submit:hover {
+      background: #C10064;
+      transform: translateY(-1px);
+    }
+
+    .auth-error {
+      color: var(--color-danger);
+      font-size: 0.85rem;
+      margin-top: 1rem;
+      font-weight: 600;
+      display: none;
+    }
+
+    /* Main Dashboard Screen */
+    .dashboard-container {
+      display: none;
+      flex-direction: column;
+      flex-grow: 1;
+      width: 100%;
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 2rem;
+    }
+
+    .dashboard-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 2rem;
+      gap: 1.5rem;
+      flex-wrap: wrap;
+    }
+
+    .header-left h1 {
+      font-family: var(--font-title);
+      font-weight: 900;
+      font-size: 2rem;
+      color: var(--color-dark);
+      letter-spacing: -0.5px;
+    }
+
+    .header-left p {
+      color: var(--color-text-muted);
+      font-size: 0.95rem;
+      margin-top: 4px;
+    }
+
+    .header-actions {
+      display: flex;
+      gap: 1rem;
+    }
+
+    .btn-action {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.75rem 1.25rem;
+      border-radius: 12px;
+      font-family: var(--font-title);
+      font-weight: 700;
+      font-size: 0.875rem;
+      cursor: pointer;
+      border: 1.5px solid transparent;
+      transition: var(--transition-smooth);
+    }
+
+    .btn-export {
+      background: var(--color-secondary);
+      color: #FFFFFF;
+    }
+
+    .btn-export:hover {
+      background: #008CA8;
+    }
+
+    .btn-logout {
+      background: transparent;
+      color: var(--color-text-muted);
+      border-color: var(--color-border);
+    }
+
+    .btn-logout:hover {
+      color: var(--color-danger);
+      border-color: var(--color-danger);
+      background: rgba(239, 68, 68, 0.05);
+    }
+
+    /* Stats Overview Cards */
+    .stats-overview {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+    }
+
+    .stat-card {
+      background: #FFFFFF;
+      border-radius: 20px;
+      padding: 1.5rem;
+      border: 1px solid var(--color-border);
+      display: flex;
+      align-items: center;
+      gap: 1.25rem;
+    }
+
+    .stat-icon {
+      width: 54px;
+      height: 54px;
+      border-radius: 14px;
+      background: rgba(226, 0, 122, 0.08);
+      color: var(--color-primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .stat-icon.secondary {
+      background: rgba(0, 161, 201, 0.08);
+      color: var(--color-secondary);
+    }
+
+    .stat-icon svg {
+      width: 26px;
+      height: 26px;
+      stroke-width: 2;
+    }
+
+    .stat-details h3 {
+      font-size: 0.85rem;
+      color: var(--color-text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 4px;
+    }
+
+    .stat-details p {
+      font-family: var(--font-title);
+      font-weight: 800;
+      font-size: 1.75rem;
+      color: var(--color-dark);
+      line-height: 1;
+    }
+
+    /* Table panel */
+    .table-panel {
+      background: #FFFFFF;
+      border-radius: 24px;
+      border: 1px solid var(--color-border);
+      overflow: hidden;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+    }
+
+    .panel-header {
+      padding: 1.5rem 2rem;
+      border-bottom: 1px solid var(--color-border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .panel-title {
+      font-family: var(--font-title);
+      font-weight: 800;
+      font-size: 1.2rem;
+    }
+
+    .search-bar {
+      position: relative;
+      max-width: 320px;
+      width: 100%;
+    }
+
+    .search-input {
+      width: 100%;
+      padding: 0.65rem 1rem 0.65rem 2.5rem;
+      border-radius: 10px;
+      border: 1.5px solid var(--color-border);
+      font-family: var(--font-body);
+      font-size: 0.875rem;
+      outline: none;
+      transition: var(--transition-smooth);
+    }
+
+    .search-input:focus {
+      border-color: var(--color-primary);
+    }
+
+    .search-icon {
+      position: absolute;
+      left: 0.85rem;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--color-text-muted);
+      width: 16px;
+      height: 16px;
+      pointer-events: none;
+    }
+
+    /* Table styling */
+    .table-wrapper {
+      overflow-x: auto;
+      width: 100%;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+    }
+
+    th {
+      background-color: var(--color-light);
+      padding: 1rem 2rem;
+      font-family: var(--font-title);
+      font-weight: 700;
+      font-size: 0.8rem;
+      color: var(--color-text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      border-bottom: 1px solid var(--color-border);
+    }
+
+    td {
+      padding: 1.25rem 2rem;
+      border-bottom: 1px solid var(--color-border);
+      vertical-align: middle;
+      font-size: 0.95rem;
+    }
+
+    tr:last-child td {
+      border-bottom: none;
+    }
+
+    tr:hover td {
+      background-color: var(--color-light);
+    }
+
+    .td-name {
+      font-weight: 600;
+      color: var(--color-dark);
+    }
+
+    .thumbnail-img {
+      width: 60px;
+      height: 60px;
+      border-radius: 10px;
+      object-fit: cover;
+      border: 2px solid #FFFFFF;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+      cursor: pointer;
+      transition: var(--transition-smooth);
+    }
+
+    .thumbnail-img:hover {
+      transform: scale(1.1);
+      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    }
+
+    .thumbnail-card {
+      width: 52px;
+      height: 65px;
+      border-radius: 6px;
+      object-fit: cover;
+      border: 2.5px solid #FFFFFF;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+      cursor: pointer;
+      transition: var(--transition-smooth);
+    }
+
+    .thumbnail-card:hover {
+      transform: scale(1.1);
+      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    }
+
+    .td-date {
+      color: var(--color-text-muted);
+      font-size: 0.85rem;
+    }
+
+    .actions-cell {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    .btn-table {
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: var(--transition-smooth);
+    }
+
+    .btn-table-download {
+      color: var(--color-secondary);
+      background: rgba(0, 161, 201, 0.08);
+    }
+
+    .btn-table-download:hover {
+      background: var(--color-secondary);
+      color: #FFFFFF;
+    }
+
+    .btn-table-delete {
+      color: var(--color-danger);
+      background: rgba(239, 68, 68, 0.08);
+    }
+
+    .btn-table-delete:hover {
+      background: var(--color-danger);
+      color: #FFFFFF;
+    }
+
+    .btn-table svg {
+      width: 18px;
+      height: 18px;
+      stroke-width: 2;
+    }
+
+    /* Modal for Image Preview */
+    .modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(15, 23, 42, 0.85);
+      backdrop-filter: blur(8px);
+      z-index: 10000;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+    }
+
+    .modal-content-wrapper {
+      position: relative;
+      max-width: 600px;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .modal-img {
+      max-width: 100%;
+      max-height: 80vh;
+      border-radius: 16px;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+      border: 4px solid #FFFFFF;
+    }
+
+    .modal-close {
+      position: absolute;
+      top: -3.5rem;
+      right: 0;
+      background: transparent;
+      border: none;
+      color: #FFFFFF;
+      cursor: pointer;
+      font-size: 1.25rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      opacity: 0.8;
+      transition: var(--transition-smooth);
+    }
+
+    .modal-close:hover {
+      opacity: 1;
+    }
+
+    .modal-close svg {
+      width: 24px;
+      height: 24px;
+    }
+
+    .empty-state {
+      padding: 4rem 2rem;
+      text-align: center;
+      color: var(--color-text-muted);
+    }
+
+    .empty-icon {
+      width: 64px;
+      height: 64px;
+      margin: 0 auto 1.5rem auto;
+      color: #CBD5E1;
+      stroke-width: 1.5;
+    }
+
+    .empty-state h3 {
+      font-family: var(--font-title);
+      font-weight: 800;
+      margin-bottom: 0.5rem;
+      color: var(--color-dark);
+    }
+  </style>
+</head>
+
+<body>
+  <!-- AUTHENTICATION FORM SCREEN -->
+  <div class="auth-container" id="auth-screen">
+    <div class="auth-card">
+      <svg class="auth-logo" viewBox="0 0 280 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect x="2" y="2" width="276" height="76" rx="14" fill="#FFFFFF" stroke="#E2E8F0" stroke-width="1.5" />
+        <g transform="translate(10, 5)">
+          <circle cx="35" cy="35" r="32" fill="#F8FAFC" />
+          <path d="M12 60 C12 52, 18 48, 25 46 C28 48, 32 48, 35 46 C42 48, 48 52, 48 60 L46 64 L14 64 Z" fill="#1A1A1A" />
+          <path d="M18 58 L24 50 M22 60 L27 52 M32 52 L37 60 M35 50 L40 58 M25 46 L30 52 L35 46" stroke="#FFFFFF" stroke-width="1.2" stroke-linecap="round" opacity="0.6" />
+          <path d="M26 39 L26 47 C28 50, 32 50, 34 48 L34 39 Z" fill="#1A1A1A" />
+          <path d="M25 36 C24 36, 23 35, 23 34 C23 33, 24 32, 24.5 32 C23.5 31, 23 30, 23 29 C23 27.5, 24.5 27, 25.5 27 C25 26.5, 24.8 25.5, 25.5 25 C26 24.5, 27 24.5, 27.5 25.5 C27 24, 27.5 23, 29 23 C31.5 23, 33 27, 33.5 30 C34 32, 33.5 36, 31 37 C29.5 37.5, 28 37, 27.5 36.5 L27 39 C27 40, 26 40, 25 36 Z" fill="#1A1A1A" />
+          <circle cx="29" cy="33" r="2" fill="#FFD100" />
+          <path d="M25 26 C20 18, 26 8, 36 6 C44 4, 48 10, 48 18 C48 24, 44 26, 38 27 C32 28, 28 27, 25 26 Z" fill="#1A1A1A" />
+          <path d="M25 26 C22 20, 26 12, 32 10 L34 16 Z" fill="#E2007A" />
+          <path d="M32 10 C35 8, 38 8, 41 9 L38 17 C36 17, 34 16, 32 15 Z" fill="#FFD100" />
+          <path d="M41 9 C44 10, 47 12, 48 16 L41 20 Z" fill="#009640" />
+          <path d="M28 24 L45 14 M29 20 L42 11 M33 26 L47 16" stroke="#1A1A1A" stroke-width="1.5" />
+        </g>
+        <text x="82" y="38" font-family="'Montserrat', sans-serif" font-weight="800" font-size="28" fill="#E2007A" letter-spacing="1">A.R.I.F</text>
+        <text x="82" y="52" font-family="'Inter', sans-serif" font-weight="700" font-size="7.5" fill="#00A1C9" letter-spacing="0.2">ASSOCIATION POUR LA RÉUSSITE ET</text>
+        <text x="82" y="62" font-family="'Inter', sans-serif" font-weight="700" font-size="7.5" fill="#00A1C9" letter-spacing="0.2">L'INSERTION DES FEMMES</text>
+      </svg>
+      <h2 class="auth-title">Portail Administration</h2>
+      <p class="auth-desc">Veuillez vous authentifier pour accéder à la liste des participants.</p>
+      <form id="login-form">
+        <div class="form-group">
+          <label class="form-label" for="password">Mot de passe Administrateur</label>
+          <input class="form-input" type="password" id="password" placeholder="Saisir le mot de passe" required autocomplete="current-password">
+        </div>
+        <button class="btn-submit" type="submit">Se connecter</button>
+        <div class="auth-error" id="auth-error-msg">Mot de passe incorrect. Veuillez réessayer.</div>
+      </form>
+    </div>
+  </div>
+
+  <!-- DASHBOARD MAIN PANEL -->
+  <div class="dashboard-container" id="dashboard-screen">
+    <!-- Header -->
+    <header class="dashboard-header">
+      <div class="header-left">
+        <h1>Dashboard Administration</h1>
+        <p>ARIF Event Card Generator - Traçabilité & exports en temps réel</p>
+      </div>
+      <div class="header-actions">
+        <button class="btn-action btn-export" id="btn-export-csv">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="7 10 12 15 17 10"></polyline>
+            <line x1="12" y1="15" x2="12" y2="3"></line>
+          </svg>
+          Exporter CSV
+        </button>
+        <button class="btn-action btn-logout" id="btn-logout">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+            <polyline points="16 17 21 12 16 7"></polyline>
+            <line x1="21" y1="12" x2="9" y2="12"></line>
+          </svg>
+          Déconnexion
+        </button>
+      </div>
+    </header>
+
+    <!-- Stats Overview Cards -->
+    <section class="stats-overview">
+      <div class="stat-card">
+        <div class="stat-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+            <circle cx="9" cy="7" r="4"></circle>
+            <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+            <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+          </svg>
+        </div>
+        <div class="stat-details">
+          <h3>Total Participants</h3>
+          <p id="stat-total-count">0</p>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon secondary">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+            <line x1="16" y1="2" x2="16" y2="6"></line>
+            <line x1="8" y1="2" x2="8" y2="6"></line>
+            <line x1="3" y1="10" x2="21" y2="10"></line>
+          </svg>
+        </div>
+        <div class="stat-details">
+          <h3>Dernière Activité</h3>
+          <p id="stat-last-active">--</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Participants Table Panel -->
+    <section class="table-panel">
+      <div class="panel-header">
+        <h2 class="panel-title">Liste des Participants</h2>
+        <div class="search-bar">
+          <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+          <input class="search-input" type="text" id="search-input" placeholder="Rechercher par nom...">
+        </div>
+      </div>
+
+      <div class="table-wrapper">
+        <table id="participants-table">
+          <thead>
+            <tr>
+              <th>Nom de l'utilisateur</th>
+              <th>Photo Uploadée</th>
+              <th>Affiche Générée</th>
+              <th>Date de soumission</th>
+              <th style="width: 120px;">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="table-body">
+            <!-- Dynamic participant rows inserted here -->
+          </tbody>
+        </table>
+        
+        <!-- Empty state -->
+        <div class="empty-state" id="empty-state" style="display: none;">
+          <svg class="empty-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+          </svg>
+          <h3>Aucun participant trouvé</h3>
+          <p>Les données apparaîtront dès qu'un utilisateur génère son affiche.</p>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- LIGHTBOX PREVIEW MODAL -->
+  <div class="modal" id="preview-modal">
+    <div class="modal-content-wrapper">
+      <button class="modal-close" id="btn-close-modal">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+        Fermer l'aperçu
+      </button>
+      <img class="modal-img" id="modal-image-target" src="" alt="Aperçu Affiche">
+    </div>
+  </div>
+
+  <script>
+    // Firebase Web SDK Configuration (ARIF Event Card)
+    const firebaseConfig = {
+      projectId: "arif-event-card",
+      appId: "1:260697604272:web:a3a164579b057ea25d7b75",
+      storageBucket: "arif-event-card.firebasestorage.app",
+      apiKey: "AIzaSyByEBDcf9idUpInhgeQ-9eY-is9eFPBa6M",
+      authDomain: "arif-event-card.firebaseapp.com",
+      messagingSenderId: "260697604272"
+    };
+
+    // Initialize Firebase
+    if (!firebase.apps.length) {
+      firebase.initializeApp(firebaseConfig);
+    }
+    const db = firebase.firestore();
+
+    // Elements
+    const authScreen = document.getElementById('auth-screen');
+    const dashboardScreen = document.getElementById('dashboard-screen');
+    const loginForm = document.getElementById('login-form');
+    const passwordInput = document.getElementById('password');
+    const authErrorMsg = document.getElementById('auth-error-msg');
+    
+    const tableBody = document.getElementById('table-body');
+    const emptyState = document.getElementById('empty-state');
+    const statTotalCount = document.getElementById('stat-total-count');
+    const statLastActive = document.getElementById('stat-last-active');
+    const searchInput = document.getElementById('search-input');
+    
+    const btnExportCsv = document.getElementById('btn-export-csv');
+    const btnLogout = document.getElementById('btn-logout');
+    
+    const previewModal = document.getElementById('preview-modal');
+    const modalImageTarget = document.getElementById('modal-image-target');
+    const btnCloseModal = document.getElementById('btn-close-modal');
+
+    // SHA-256 equivalent or simple admin authentication check
+    // Secure enough simple local password for admin page
+    const ADMIN_PASSWORD_HASH = "b687f8b9ecb1376bfbb1a986cb00fdfc46fcf6c8d76a5b281f5c66b885b5b9be"; // SHA-256 for "ARIF_ADMIN_2026"
+
+    async function sha256(message) {
+      const msgBuffer = new TextEncoder().encode(message);
+      const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+      const hashArray = Array.from(new Uint8Array(hashBuffer));
+      return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+    }
+
+    // Check auth status
+    const checkSessionAuth = () => {
+      if (sessionStorage.getItem('arif_admin_authenticated') === 'true') {
+        showDashboard();
+      } else {
+        showAuthScreen();
+      }
+    };
+
+    const showDashboard = () => {
+      authScreen.style.display = 'none';
+      dashboardScreen.style.display = 'flex';
+      loadParticipantsRealtime();
+    };
+
+    const showAuthScreen = () => {
+      authScreen.style.display = 'flex';
+      dashboardScreen.style.display = 'none';
+    };
+
+    // Handle Login Submit
+    loginForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const enteredPassword = passwordInput.value;
+      const hashedEntered = await sha256(enteredPassword);
+
+      if (hashedEntered === ADMIN_PASSWORD_HASH) {
+        sessionStorage.setItem('arif_admin_authenticated', 'true');
+        authErrorMsg.style.display = 'none';
+        passwordInput.value = '';
+        showDashboard();
+      } else {
+        authErrorMsg.style.display = 'block';
+        passwordInput.value = '';
+        passwordInput.focus();
+      }
+    });
+
+    // Handle Logout
+    btnLogout.addEventListener('click', () => {
+      sessionStorage.removeItem('arif_admin_authenticated');
+      showAuthScreen();
+    });
+
+    // Format dates nicely
+    const formatDate = (timestamp) => {
+      if (!timestamp) return '--';
+      const date = timestamp.toDate();
+      const pad = (n) => String(n).padStart(2, '0');
+      
+      const day = pad(date.getDate());
+      const month = pad(date.getMonth() + 1);
+      const year = date.getFullYear();
+      
+      const hours = pad(date.getHours());
+      const minutes = pad(date.getMinutes());
+      
+      return `${day}/${month}/${year} à ${hours}:${minutes}`;
+    };
+
+    let allParticipants = [];
+
+    // Realtime Listener
+    const loadParticipantsRealtime = () => {
+      db.collection("participants")
+        .orderBy("createdAt", "desc")
+        .onSnapshot(snapshot => {
+          allParticipants = [];
+          tableBody.innerHTML = '';
+          
+          if (snapshot.empty) {
+            emptyState.style.display = 'block';
+            statTotalCount.textContent = '0';
+            statLastActive.textContent = '--';
+            return;
+          }
+          
+          emptyState.style.display = 'none';
+          
+          let lastActiveTime = null;
+          
+          snapshot.forEach(doc => {
+            const data = doc.data();
+            const id = doc.id;
+            const item = { id, ...data };
+            allParticipants.push(item);
+            
+            if (!lastActiveTime && data.createdAt) {
+              lastActiveTime = data.createdAt;
+            }
+          });
+
+          statTotalCount.textContent = allParticipants.length;
+          if (lastActiveTime) {
+            statLastActive.textContent = formatDate(lastActiveTime);
+          } else {
+            statLastActive.textContent = 'Récemment';
+          }
+          
+          renderFilteredTable(searchInput.value.trim());
+        }, error => {
+          console.error("Firestore Listen error:", error);
+        });
+    };
+
+    // Render table rows based on filter
+    const renderFilteredTable = (filterText = '') => {
+      tableBody.innerHTML = '';
+      const filter = filterText.toLowerCase();
+      
+      const filteredList = allParticipants.filter(p => p.name.toLowerCase().includes(filter));
+      
+      if (filteredList.length === 0) {
+        emptyState.style.display = 'block';
+        return;
+      }
+      
+      emptyState.style.display = 'none';
+      
+      filteredList.forEach(p => {
+        const tr = document.createElement('tr');
+        
+        // Col 1: Name
+        const tdName = document.createElement('td');
+        tdName.className = 'td-name';
+        tdName.textContent = p.name;
+        tr.appendChild(tdName);
+        
+        // Col 2: Photo Thumbnail
+        const tdPhoto = document.createElement('td');
+        if (p.photoURL) {
+          const img = document.createElement('img');
+          img.className = 'thumbnail-img';
+          img.src = p.photoURL;
+          img.alt = `Photo ${p.name}`;
+          img.addEventListener('click', () => openImageModal(p.photoURL));
+          tdPhoto.appendChild(img);
+        } else {
+          tdPhoto.textContent = 'Pas de photo';
+          tdPhoto.style.color = 'var(--color-text-muted)';
+        }
+        tr.appendChild(tdPhoto);
+        
+        // Col 3: Generated Card Thumbnail
+        const tdCard = document.createElement('td');
+        if (p.cardURL) {
+          const img = document.createElement('img');
+          img.className = 'thumbnail-card';
+          img.src = p.cardURL;
+          img.alt = `Affiche ${p.name}`;
+          img.addEventListener('click', () => openImageModal(p.cardURL));
+          tdCard.appendChild(img);
+        } else {
+          tdCard.textContent = 'En cours...';
+        }
+        tr.appendChild(tdCard);
+        
+        // Col 4: Submission Date
+        const tdDate = document.createElement('td');
+        tdDate.className = 'td-date';
+        tdDate.textContent = formatDate(p.createdAt);
+        tr.appendChild(tdDate);
+        
+        // Col 5: Actions
+        const tdActions = document.createElement('td');
+        const actionWrapper = document.createElement('div');
+        actionWrapper.className = 'actions-cell';
+        
+        // Download button
+        const btnDownload = document.createElement('button');
+        btnDownload.className = 'btn-table btn-table-download';
+        btnDownload.title = "Télécharger l'affiche";
+        btnDownload.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>`;
+        btnDownload.addEventListener('click', () => downloadCardFile(p.name, p.cardURL));
+        actionWrapper.appendChild(btnDownload);
+        
+        // Delete button
+        const btnDelete = document.createElement('button');
+        btnDelete.className = 'btn-table btn-table-delete';
+        btnDelete.title = "Supprimer cette entrée";
+        btnDelete.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>`;
+        btnDelete.addEventListener('click', () => deleteParticipantEntry(p.id, p.name));
+        actionWrapper.appendChild(btnDelete);
+        
+        tdActions.appendChild(actionWrapper);
+        tr.appendChild(tdActions);
+        
+        tableBody.appendChild(tr);
+      });
+    };
+
+    // Filter table search input handler
+    searchInput.addEventListener('input', (e) => {
+      renderFilteredTable(e.target.value.trim());
+    });
+
+    // Lightbox triggers
+    const openImageModal = (src) => {
+      modalImageTarget.src = src;
+      previewModal.style.display = 'flex';
+    };
+
+    const closeImageModal = () => {
+      previewModal.style.display = 'none';
+      modalImageTarget.src = '';
+    };
+
+    btnCloseModal.addEventListener('click', closeImageModal);
+    previewModal.addEventListener('click', (e) => {
+      if (e.target === previewModal) {
+        closeImageModal();
+      }
+    });
+
+    // Download Card file helper
+    const downloadCardFile = (name, base64Data) => {
+      if (!base64Data) return;
+      const cleanName = name.toLowerCase().replace(/[^a-z0-9]/g, '_');
+      const filename = `ARIF_IA_Participation_${cleanName}.jpg`;
+      
+      const downloadLink = document.createElement('a');
+      downloadLink.download = filename;
+      downloadLink.href = base64Data;
+      
+      document.body.appendChild(downloadLink);
+      downloadLink.click();
+      document.body.removeChild(downloadLink);
+    };
+
+    // Delete document entry from Firestore
+    const deleteParticipantEntry = async (id, name) => {
+      if (confirm(`Êtes-vous sûr de vouloir supprimer l'entrée de "${name}" de manière définitive ?`)) {
+        try {
+          await db.collection("participants").doc(id).delete();
+        } catch (error) {
+          console.error("Delete error:", error);
+          alert("Une erreur est survenue lors de la suppression.");
+        }
+      }
+    };
+
+    // Export to CSV Function
+    btnExportCsv.addEventListener('click', () => {
+      if (allParticipants.length === 0) {
+        alert("Aucune donnée à exporter.");
+        return;
+      }
+      
+      let csvContent = "data:text/csv;charset=utf-8,\uFEFF";
+      // Headers
+      csvContent += "ID,Nom complet,Date de creation\r\n";
+      
+      allParticipants.forEach(p => {
+        const dateStr = p.createdAt ? p.createdAt.toDate().toISOString() : '';
+        // Escape commas
+        const escapedName = `"${p.name.replace(/"/g, '""')}"`;
+        csvContent += `${p.id},${escapedName},${dateStr}\r\n`;
+      });
+      
+      const encodedUri = encodeURI(csvContent);
+      const downloadLink = document.createElement("a");
+      downloadLink.setAttribute("href", encodedUri);
+      
+      const dateToday = new Date().toISOString().slice(0,10);
+      downloadLink.setAttribute("download", `Export_Participants_ARIF_${dateToday}.csv`);
+      
+      document.body.appendChild(downloadLink);
+      downloadLink.click();
+      document.body.removeChild(downloadLink);
+    });
+
+    // Check Auth state on load
+    window.onload = checkSessionAuth;
+  </script>
+</body>
+
+</html>

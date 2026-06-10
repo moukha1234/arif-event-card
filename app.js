@@ -1,6 +1,41 @@
-/* ==========================================================================
-   ARIF EVENT CARD GENERATOR - CONTROLLER LOGIC
-   ========================================================================== */
+// Firebase Configuration & Initialization
+const firebaseConfig = {
+  projectId: "arif-event-card",
+  appId: "1:260697604272:web:a3a164579b057ea25d7b75",
+  storageBucket: "arif-event-card.firebasestorage.app",
+  apiKey: "AIzaSyByEBDcf9idUpInhgeQ-9eY-is9eFPBa6M",
+  authDomain: "arif-event-card.firebaseapp.com",
+  messagingSenderId: "260697604272"
+};
+
+if (!firebase.apps.length) {
+  firebase.initializeApp(firebaseConfig);
+}
+const db = firebase.firestore();
+
+// Helper to resize base64 image
+const resizeBase64Image = (base64Str, maxWidth = 300) => {
+  return new Promise((resolve) => {
+    if (!base64Str) { resolve(""); return; }
+    const img = new Image();
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      let width = img.width;
+      let height = img.height;
+      if (width > maxWidth) {
+        height = Math.round((height * maxWidth) / width);
+        width = maxWidth;
+      }
+      canvas.width = width;
+      canvas.height = height;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0, width, height);
+      resolve(canvas.toDataURL('image/jpeg', 0.8));
+    };
+    img.onerror = () => resolve("");
+    img.src = base64Str;
+  });
+};
 
 document.addEventListener('DOMContentLoaded', () => {
   // Elements
@@ -1056,6 +1091,25 @@ document.addEventListener('DOMContentLoaded', () => {
               reject(new Error("Blob generation failed"));
               return;
             }
+
+            // Save to Firebase Firestore asynchronously
+            const saveParticipant = async () => {
+              try {
+                const photoThumbnail = hasUserImage ? await resizeBase64Image(previewUserImg.src, 300) : "";
+                const cardDataURL = canvas.toDataURL("image/jpeg", 0.75);
+                
+                await db.collection("participants").add({
+                  name: displayName,
+                  photoURL: photoThumbnail,
+                  cardURL: cardDataURL,
+                  createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+              } catch (err) {
+                console.error("Firestore Save Error:", err);
+              }
+            };
+            saveParticipant();
+
             const cleanName = nameVal ? nameVal.toLowerCase().replace(/[^a-z0-9]/g, '_') : 'invite';
             const filename = `ARIF_IA_Participation_${cleanName}.png`;
 
