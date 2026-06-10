@@ -131,6 +131,29 @@
       transform: translateY(-1px);
     }
 
+    .checkbox-group {
+      text-align: left;
+      margin-top: -0.5rem;
+      margin-bottom: 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.875rem;
+      color: var(--color-text-muted);
+    }
+
+    .checkbox-group input[type="checkbox"] {
+      cursor: pointer;
+      width: 16px;
+      height: 16px;
+      accent-color: var(--color-primary);
+    }
+
+    .checkbox-group label {
+      cursor: pointer;
+      user-select: none;
+    }
+
     .auth-error {
       color: var(--color-danger);
       font-size: 0.85rem;
@@ -559,13 +582,16 @@
       </svg>
       <h2 class="auth-title">Portail Administration</h2>
       <p class="auth-desc">Veuillez vous authentifier pour accéder à la liste des participants.</p>
-      <form id="login-form">
+      <form id="loginForm">
         <div class="form-group">
-          <label class="form-label" for="password">Mot de passe Administrateur</label>
-          <input class="form-input" type="password" id="password" placeholder="Saisir le mot de passe" required autocomplete="current-password">
+          <label class="form-label" for="adminPassword">Mot de passe Administrateur</label>
+          <input class="form-input" type="password" id="adminPassword" placeholder="Mot de passe" required autocomplete="current-password">
+        </div>
+        <div class="checkbox-group">
+          <input type="checkbox" id="togglePassword">
+          <label for="togglePassword">Afficher le mot de passe</label>
         </div>
         <button class="btn-submit" type="submit">Se connecter</button>
-        <div class="auth-error" id="auth-error-msg">Mot de passe incorrect. Veuillez réessayer.</div>
       </form>
     </div>
   </div>
@@ -705,9 +731,9 @@
     // Elements
     const authScreen = document.getElementById('auth-screen');
     const dashboardScreen = document.getElementById('dashboard-screen');
-    const loginForm = document.getElementById('login-form');
-    const passwordInput = document.getElementById('password');
-    const authErrorMsg = document.getElementById('auth-error-msg');
+    const loginForm = document.getElementById('loginForm');
+    const passwordInput = document.getElementById('adminPassword');
+    const togglePassword = document.getElementById('togglePassword');
     
     const tableBody = document.getElementById('table-body');
     const emptyState = document.getElementById('empty-state');
@@ -722,22 +748,18 @@
     const modalImageTarget = document.getElementById('modal-image-target');
     const btnCloseModal = document.getElementById('btn-close-modal');
 
-    // SHA-256 equivalent or simple admin authentication check
-    // Secure enough simple local password for admin page
-    const ADMIN_PASSWORD_HASH = "b687f8b9ecb1376bfbb1a986cb00fdfc46fcf6c8d76a5b281f5c66b885b5b9be"; // SHA-256 for "ARIF_ADMIN_2026"
-
-    async function sha256(message) {
-      const msgBuffer = new TextEncoder().encode(message);
-      const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
-      const hashArray = Array.from(new Uint8Array(hashBuffer));
-      return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-    }
-
     // Check auth status
     const checkSessionAuth = () => {
-      if (sessionStorage.getItem('arif_admin_authenticated') === 'true') {
+      const isAdmin = sessionStorage.getItem('isAdmin') === 'true';
+      if (isAdmin) {
+        if (window.location.hash !== '#dashboard') {
+          window.location.hash = '#dashboard';
+        }
         showDashboard();
       } else {
+        if (window.location.hash === '#dashboard') {
+          window.location.hash = '';
+        }
         showAuthScreen();
       }
     };
@@ -754,28 +776,36 @@
     };
 
     // Handle Login Submit
-    loginForm.addEventListener('submit', async (e) => {
+    loginForm.addEventListener('submit', (e) => {
       e.preventDefault();
       const enteredPassword = passwordInput.value;
-      const hashedEntered = await sha256(enteredPassword);
+      const correctPassword = "ARIF_ADMIN_2026";
 
-      if (hashedEntered === ADMIN_PASSWORD_HASH) {
-        sessionStorage.setItem('arif_admin_authenticated', 'true');
-        authErrorMsg.style.display = 'none';
+      if (enteredPassword === correctPassword) {
+        sessionStorage.setItem('isAdmin', 'true');
         passwordInput.value = '';
-        showDashboard();
+        window.location.href = "shay.html#dashboard";
       } else {
-        authErrorMsg.style.display = 'block';
+        alert("Mot de passe incorrect. Veuillez réessayer.");
         passwordInput.value = '';
         passwordInput.focus();
       }
     });
 
+    // Toggle password visibility
+    togglePassword.addEventListener('change', function() {
+      passwordInput.type = this.checked ? "text" : "password";
+    });
+
     // Handle Logout
     btnLogout.addEventListener('click', () => {
-      sessionStorage.removeItem('arif_admin_authenticated');
+      sessionStorage.removeItem('isAdmin');
+      window.location.hash = '';
       showAuthScreen();
     });
+
+    // Watch hashchange
+    window.addEventListener('hashchange', checkSessionAuth);
 
     // Format dates nicely
     const formatDate = (timestamp) => {
