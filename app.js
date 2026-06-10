@@ -60,8 +60,9 @@ document.addEventListener('DOMContentLoaded', () => {
   // ==========================================================================
   // 2. NAME FIELD LIVE UPDATE & AUTO-SHRINK TEXT FONT SIZE
   // ==========================================================================
-  const calculateFontSize = (name) => {
-    const len = name.length;
+  const calculateFontSize = (nameOrLength) => {
+    // Accepte un string (utilise .length) ou un nombre directement
+    const len = typeof nameOrLength === 'string' ? nameOrLength.length : nameOrLength;
     if (len <= 18) return 40;
     if (len <= 25) return 32;
     if (len <= 35) return 26;
@@ -69,7 +70,7 @@ document.addEventListener('DOMContentLoaded', () => {
   };
 
   const updateNameFontSize = (nameLength) => {
-    cardUserName.style.fontSize = `${calculateFontSize({ length: nameLength })}px`;
+    cardUserName.style.fontSize = `${calculateFontSize(nameLength)}px`;
   };
 
   inputName.addEventListener('input', (e) => {
@@ -246,28 +247,22 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Helper to convert an SVG element to an HTMLImageElement
   const svgToImage = (svgElement, width, height) => {
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve) => {
+      if (!svgElement) { resolve(null); return; }
       try {
         const clone = svgElement.cloneNode(true);
         if (width) clone.setAttribute('width', width);
         if (height) clone.setAttribute('height', height);
-        
         const svgString = new XMLSerializer().serializeToString(clone);
         const svgBlob = new Blob([svgString], { type: 'image/svg+xml;charset=utf-8' });
         const url = URL.createObjectURL(svgBlob);
-        
         const img = new Image();
-        img.onload = () => {
-          URL.revokeObjectURL(url);
-          resolve(img);
-        };
-        img.onerror = (err) => {
-          URL.revokeObjectURL(url);
-          reject(err);
-        };
+        img.onload = () => { URL.revokeObjectURL(url); resolve(img); };
+        img.onerror = () => { URL.revokeObjectURL(url); resolve(null); };
         img.src = url;
       } catch (e) {
-        reject(e);
+        console.warn('svgToImage failed:', e);
+        resolve(null);
       }
     });
   };
@@ -547,7 +542,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const headingY = clamp(heading.y, 0, 1000);
     ctx.save();
     ctx.font = "800 13px 'Montserrat', sans-serif";
-    ctx.letterSpacing = "1.5px";
     const badgeText = "CONFIRMATION DE PARTICIPATION";
     const badgeTextWidth = ctx.measureText(badgeText).width;
     const badgeW = badgeTextWidth + 72;
@@ -746,7 +740,7 @@ document.addEventListener('DOMContentLoaded', () => {
     ctx.textBaseline = 'middle';
     ctx.fillStyle = '#E2007A';
     
-    ctx.font = "950 34px 'Montserrat', sans-serif";
+    ctx.font = "900 34px 'Montserrat', sans-serif";
     ctx.fillText(dayText, 690, 83);
     
     ctx.font = "800 16px 'Montserrat', sans-serif";
@@ -768,7 +762,6 @@ document.addEventListener('DOMContentLoaded', () => {
     // D.2 Heading Badge ("CONFIRMATION DE PARTICIPATION" and Dots)
     ctx.save();
     ctx.font = "800 13px 'Montserrat', sans-serif";
-    ctx.letterSpacing = "1.5px";
     ctx.fillStyle = heading.color;
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
@@ -852,7 +845,6 @@ document.addEventListener('DOMContentLoaded', () => {
     ctx.font = subtitleFont;
     ctx.fillStyle = statement.orgColor;
     ctx.textAlign = 'center';
-    ctx.letterSpacing = "0.5px";
     ctx.fillText(orgSubtitleText, 400, nextY + 6);
     ctx.restore();
 
@@ -869,12 +861,10 @@ document.addEventListener('DOMContentLoaded', () => {
     ctx.textAlign = 'left';
     ctx.font = "700 11px 'Montserrat', sans-serif";
     ctx.fillStyle = details.labelColor;
-    ctx.letterSpacing = "1.5px";
     ctx.fillText("LIEU", text1X, detailsY + 40);
 
     ctx.font = "800 17px 'Inter', sans-serif";
     ctx.fillStyle = details.valueColor;
-    ctx.letterSpacing = "0px";
     ctx.fillText(venueText, text1X, detailsY + 64);
 
     // Column 2 (Heure) Texts
@@ -882,29 +872,12 @@ document.addEventListener('DOMContentLoaded', () => {
     ctx.textAlign = 'left';
     ctx.font = "700 11px 'Montserrat', sans-serif";
     ctx.fillStyle = details.labelColor;
-    ctx.letterSpacing = "1.5px";
     ctx.fillText("HEURE", text2X, detailsY + 40);
 
     ctx.font = "800 17px 'Inter', sans-serif";
     ctx.fillStyle = details.valueColor;
-    ctx.letterSpacing = "0px";
     ctx.fillText(timeTextDetail, text2X, detailsY + 64);
     ctx.restore();
-
-    // ==========================================================================
-    // STAGE E: TEMPORARY RED DEBUG BORDER (DEBUG VISUAL LIMITS)
-    // ==========================================================================
-    ctx.strokeStyle = '#FF0000';
-    ctx.lineWidth = 4;
-    ctx.strokeRect(0, 0, 800, 1000);
-
-    console.log("DOM Synced Values parsed for canvas export:", {
-      displayName,
-      nameFontSize,
-      parsedSegments: segments.map(s => s.text),
-      parsedVenue: venueText,
-      parsedTime: timeTextDetail
-    });
   };
 
   btnDownloadCard.addEventListener('click', async () => {
@@ -970,13 +943,6 @@ document.addEventListener('DOMContentLoaded', () => {
         userImgPromise,
         placeholderPromise
       ]);
-        console.log("EXPORT DOM VALUES CHECK:", {
-          nameVal,
-          displayName,
-          nameFontSize,
-          confirmationText: document.querySelector('.confirmation-statement')?.textContent?.trim(),
-          details: Array.from(document.querySelectorAll('.detail-value')).map(el => el.textContent.trim())
-        });
 
         // 1. SETUP CANVAS & RESOLUTION SCALING
         const dpr = window.devicePixelRatio || 1;
@@ -1019,14 +985,6 @@ document.addEventListener('DOMContentLoaded', () => {
           y: clamp(parseFloat(sliderY.value), -150, 150),
           zoom: clamp(sliderZoom.value / 100, 0.5, 3.0)
         };
-
-        console.log("Pre-export validation details:", {
-          displayName,
-          nameFontSize,
-          photoCoords,
-          canvasWidth: canvas.width,
-          canvasHeight: canvas.height
-        });
 
         await new Promise((resolve, reject) => {
           canvas.toBlob((blob) => {
