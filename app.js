@@ -775,15 +775,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // D.0 "J'y Serai" Title (Centered)
     ctx.save();
-    ctx.font = "bold 48px 'Brush Script MT', cursive";
+    ctx.font = "bold 60px 'Brush Script MT', cursive";
     ctx.fillStyle = "#FFFFFF";
     ctx.shadowColor = "#4B0082";
-    ctx.shadowBlur = 6;
+    ctx.shadowBlur = 8;
     ctx.shadowOffsetX = 0;
     ctx.shadowOffsetY = 2;
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
-    ctx.fillText("J'y Serai", 400, 180);
+    ctx.fillText("J'y Serai", 400, 220);
     ctx.restore();
 
     // D.1 Scalloped Date Badge Content Texts
