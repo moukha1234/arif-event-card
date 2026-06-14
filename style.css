@@ -726,7 +726,7 @@ input[type="range"]::-webkit-slider-thumb:hover {
     radial-gradient(rgba(0, 0, 0, 0.008) 1.5px, transparent 0);
   background-size: 16px 16px;
   background-position: 0 0, 8px 8px;
-  padding: 95px 50px 30px 50px;
+  padding: 110px 50px 30px 50px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -837,15 +837,15 @@ input[type="range"]::-webkit-slider-thumb:hover {
 /* Profile Photo Section (Centered on transition edge) */
 .card-profile-section {
   position: absolute;
-  top: 325px;
+  top: 310px;
   left: 50%;
   transform: translateX(-50%);
   z-index: 10;
 }
 
 .profile-outer-ring {
-  width: 240px;
-  height: 240px;
+  width: 270px;
+  height: 270px;
   border-radius: 50%;
   background: #FFFFFF;
   padding: 6px;
@@ -891,8 +891,8 @@ input[type="range"]::-webkit-slider-thumb:hover {
 }
 
 .profile-placeholder svg {
-  width: 110px;
-  height: 110px;
+  width: 123px;
+  height: 123px;
 }
 
 /* User's photo inside frame */

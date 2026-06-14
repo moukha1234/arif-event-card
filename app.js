@@ -760,12 +760,12 @@ document.addEventListener('DOMContentLoaded', () => {
       const imgW = userImg.naturalWidth || userImg.width;
       const imgH = userImg.naturalHeight || userImg.height;
       
-      let dw = 220;
-      let dh = 220;
+      let dw = p.clipRadius * 2;
+      let dh = p.clipRadius * 2;
       if (imgW >= imgH) {
-        dw = 220 * (imgW / imgH);
+        dw = (p.clipRadius * 2) * (imgW / imgH);
       } else {
-        dh = 220 * (imgH / imgW);
+        dh = (p.clipRadius * 2) * (imgH / imgW);
       }
       
       const zoom = clamp(sliderZoom.value / 100, 0.5, 3.0);
@@ -784,7 +784,7 @@ document.addEventListener('DOMContentLoaded', () => {
       ctx.fillStyle = '#E2E8F0';
       ctx.fillRect(avatarCX - p.clipRadius, avatarCY - p.clipRadius, p.clipRadius * 2, p.clipRadius * 2);
       if (placeholderImg) {
-        ctx.drawImage(placeholderImg, avatarCX - 55, avatarCY - 55, 110, 110);
+        ctx.drawImage(placeholderImg, avatarCX - p.clipRadius / 2, avatarCY - p.clipRadius / 2, p.clipRadius, p.clipRadius);
       }
     }
     ctx.restore(); // Restore clipping context
@@ -824,7 +824,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // D.1 Scalloped Date Badge Content Texts
     const dayText = document.querySelector('.scalloped-day') ? document.querySelector('.scalloped-day').textContent.trim() : "20";
     const monthText = document.querySelector('.scalloped-month') ? document.querySelector('.scalloped-month').textContent.trim() : "JUIN";
-    const timeText = document.querySelector('.scalloped-time') ? document.querySelector('.scalloped-time').textContent.trim() : "15 H";
+    const timeText = document.querySelector('.scalloped-time') ? document.querySelector('.scalloped-time').textContent.trim() : "09h00";
 
     ctx.save();
     ctx.textAlign = 'center';
@@ -945,7 +945,7 @@ document.addEventListener('DOMContentLoaded', () => {
     
     const detailValues = document.querySelectorAll('.detail-value');
     const venueText = detailValues[0] ? detailValues[0].textContent.trim() : "Mairie Ville de Rufisque";
-    const timeTextDetail = detailValues[1] ? detailValues[1].textContent.trim() : "À partir de 15h";
+    const timeTextDetail = detailValues[1] ? detailValues[1].textContent.trim() : "À partir de 09h00";
 
     // Column 1 (Lieu) Texts
     const text1X = clamp(detailsX + details.col1X, 0, 800);
@@ -1034,7 +1034,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       // Placeholder image
       const placeholderSvg = document.querySelector('#preview-placeholder svg');
-      const placeholderPromise = svgToImage(placeholderSvg, 110, 110);
+      const placeholderPromise = svgToImage(placeholderSvg, LayoutConfig.profile.clipRadius, LayoutConfig.profile.clipRadius);
 
       const [scallopedImg, starImg, pinImg, clockImg, logoImg, userImg, placeholderImg] = await Promise.all([
         ...svgPromises,

@@ -16,7 +16,7 @@ Ce projet est 100% statique et côté client, conçu pour être léger, fluide e
 3. **Respect de la Charte Graphique Officielle ARIF** :
    - Intégration du logo officiel d'ARIF (profil féminin stylisé et foulard aux motifs rouge, jaune et vert) dessiné en SVG vectoriel pour une netteté absolue.
    - Thématique couleur officielle (Magenta `#E2007A`, Cyan `#00A1C9`).
-   - Sceau de date cranté ("20 JUIN / 15 H"), grille de points décorative et ligne d'effet papier déchiré.
+   - Sceau de date cranté ("20 JUIN / 09h00"), grille de points décorative et ligne d'effet papier déchiré.
 
 4. **Export Haute Définition** :
    - Téléchargement instantané d'une image PNG haute résolution de `1600x2000px` (échelle de rendu de x2 via `html2canvas`), optimisée et prête à être partagée en Story WhatsApp ou Instagram.

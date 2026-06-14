@@ -43,14 +43,14 @@ const LayoutConfig = {
   profile: {
     cx: 400,
     cy: 445,
-    outerRadius: 120, // Border radius
-    innerRadius: 114, // Dashed border radius
-    clipRadius: 110,   // Image mask radius
+    outerRadius: 135, // Border radius (increased from 120)
+    innerRadius: 128, // Dashed border radius (increased from 114)
+    clipRadius: 123,   // Image mask radius (increased from 110)
     borderColor: '#E2007A',
     innerDashedColor: '#00A1C9',
     seal: {
-      cx: 491, // 400 + 91
-      cy: 536, // 445 + 91
+      cx: 506, // 400 + 106 (adjusted for outerRadius 135)
+      cy: 551, // 445 + 106 (adjusted for outerRadius 135)
       r: 25,
       color: ['#00A1C9', '#008CA8']
     }
@@ -58,7 +58,7 @@ const LayoutConfig = {
   
   // Heading badge (CONFIRMATION DE PARTICIPATION)
   headingBadge: {
-    y: 615,
+    y: 630, // Shifted +15px from 615
     height: 34,
     color: '#E2007A',
     bgColor: 'rgba(226, 0, 122, 0.05)',
@@ -68,19 +68,19 @@ const LayoutConfig = {
   // Text configurations
   text: {
     salutation: {
-      y: 660,
+      y: 675, // Shifted +15px from 660
       font: "italic 600 22px 'Playfair Display', serif",
       color: '#E2007A'
     },
     name: {
-      y: 710,
+      y: 725, // Shifted +15px from 710
       color: '#111111',
       underlineColor: '#00A1C9',
       underlineThickness: 3.5,
       underlineSpacing: 8
     },
     statement: {
-      y: 770,
+      y: 785, // Shifted +15px from 770
       lineHeight: 28,
       color: '#334155',
       highlightColor: '#E2007A',
@@ -91,7 +91,7 @@ const LayoutConfig = {
   // Bottom Event Details block
   eventDetails: {
     x: 60, // 800 - 680 / 2
-    y: 855,
+    y: 870, // Shifted +15px from 855
     width: 680,
     height: 95,
     borderColor: 'rgba(0, 161, 201, 0.15)',
