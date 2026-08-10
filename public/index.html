@@ -19,16 +19,16 @@
     .container {
       text-align: center;
       padding: 2rem;
-      max-width: 480px;
+      max-width: 520px;
     }
     .logo {
       width: 120px;
       border-radius: 12px;
-      margin-bottom: 2rem;
+      margin-bottom: 1.5rem;
       box-shadow: 0 4px 16px rgba(226,0,122,0.15);
     }
     h1 {
-      font-size: 2rem;
+      font-size: 2.2rem;
       font-weight: 800;
       color: #E2007A;
       margin-bottom: 0.5rem;
@@ -39,24 +39,36 @@
       font-size: 1rem;
       line-height: 1.6;
     }
-    .btn {
-      display: inline-block;
-      padding: 0.875rem 2rem;
-      background: linear-gradient(135deg, #E2007A, #00A1C9);
-      color: white;
+    .event-card-link {
+      display: block;
+      background: white;
+      padding: 1.2rem;
+      border-radius: 16px;
+      margin-bottom: 1rem;
       text-decoration: none;
-      border-radius: 50px;
-      font-weight: 700;
-      font-size: 0.95rem;
+      color: inherit;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+      border: 1px solid #E2E8F0;
       transition: transform 0.2s, box-shadow 0.2s;
-      box-shadow: 0 4px 16px rgba(226,0,122,0.3);
+      text-align: left;
     }
-    .btn:hover {
+    .event-card-link:hover {
       transform: translateY(-2px);
-      box-shadow: 0 8px 24px rgba(226,0,122,0.4);
+      box-shadow: 0 8px 24px rgba(226,0,122,0.15);
+      border-color: #E2007A;
+    }
+    .event-title {
+      font-weight: 700;
+      color: #E2007A;
+      font-size: 1.1rem;
+      margin-bottom: 0.25rem;
+    }
+    .event-meta {
+      font-size: 0.85rem;
+      color: #64748B;
     }
     .footer {
-      margin-top: 3rem;
+      margin-top: 2.5rem;
       color: #94A3B8;
       font-size: 0.8rem;
     }
@@ -66,10 +78,18 @@
   <div class="container">
     <img class="logo" src="assets/images/logo-arif-cropped.jpg" alt="Logo ARIF">
     <h1>J'y Serai</h1>
-    <p>Plateforme de génération d'affiches personnalisées pour les événements ARIF.</p>
-    <a class="btn" href="/assets/pages/index.html">
-      Générer mon affiche →
+    <p>Plateforme SaaS de génération d'affiches personnalisées. Choisissez un événement ci-dessous pour générer votre affiche :</p>
+    
+    <a class="event-card-link" href="assets/pages/index.html?e=remise-attestations-arif-2026">
+      <div class="event-title">🎓 Remise des Attestations ARIF 2026</div>
+      <div class="event-meta">20 JUIN • 09h00 • Mairie de Rufisque</div>
     </a>
+
+    <a class="event-card-link" href="assets/pages/index.html?e=bourdou-populaire-2026">
+      <div class="event-title" style="color: #D97706;">🎉 Grand Bourdou Populaire 2026</div>
+      <div class="event-meta">15 NOVEMBRE • 16h30 • Stade Ngalandou Diouf</div>
+    </a>
+
     <div class="footer">
       <p>&copy; 2026 ARIF — Association pour la Réussite et l'Insertion des Femmes</p>
     </div>

@@ -4,8 +4,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>J'y Serai – Générateur d'affiche ARIF</title>
-  <meta name="description" content="Générez votre affiche personnalisée de participation à la journée ARIF — Remise des Attestations en Intelligence Artificielle.">
+  <title id="page-title">J'y Serai – Générateur d'affiche</title>
+  <meta name="description" content="Générez votre affiche personnalisée de participation à un événement avec J'y Serai.">
 
   <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -22,22 +22,43 @@
   <div class="app-container">
 
     <!-- ====================================================================
-         EN-TÊTE PRINCIPAL
+         EN-TÊTE PRINCIPAL (DYNAMIQUE)
          ==================================================================== -->
     <header class="app-header">
       <div class="header-logo-container">
-        <img class="header-logo" src="../images/logo-arif-cropped.jpg" alt="Logo ARIF">
+        <img id="app-logo" class="header-logo" src="../images/logo-arif-cropped.jpg" alt="Logo Officiel">
       </div>
       <div class="header-title">
-        <h1>ARIF Event Card Generator</h1>
-        <p>Générez votre affiche de participation selon la charte officielle d'ARIF</p>
+        <h1 id="event-header-title">J'y Serai — Générateur d'Affiche</h1>
+        <p id="event-header-subtitle">Générez votre affiche de participation personnalisée</p>
       </div>
     </header>
+
+    <!-- ÉTAT DE CHARGEMENT FIRESTORE -->
+    <div id="event-loading-state" class="card-glass-panel" style="text-align: center; padding: 3rem; margin: 2rem auto; max-width: 600px;">
+      <div class="spinner" style="width: 48px; height: 48px; border-width: 4px; margin: 0 auto 1.5rem auto;"></div>
+      <h3 style="color: var(--color-primary); font-size: 1.3rem; margin-bottom: 0.5rem;">Chargement de l'événement...</h3>
+      <p style="color: var(--color-text-muted);">Récupération de la configuration personnalisée depuis Firestore.</p>
+    </div>
+
+    <!-- ÉTAT D'ERREUR FIRESTORE -->
+    <div id="event-error-state" class="card-glass-panel hidden" style="text-align: center; padding: 3rem; margin: 2rem auto; max-width: 600px;">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#E2007A" stroke-width="2" style="width: 56px; height: 56px; margin: 0 auto 1rem auto;">
+        <circle cx="12" cy="12" r="10"></circle>
+        <line x1="12" y1="8" x2="12" y2="12"></line>
+        <line x1="12" y1="16" x2="12.01" y2="16"></line>
+      </svg>
+      <h3 id="error-title" style="color: var(--color-text-dark); font-size: 1.4rem; margin-bottom: 0.5rem;">Événement non trouvé</h3>
+      <p id="error-desc" style="color: var(--color-text-muted); margin-bottom: 1.5rem;">L'événement demandé n'existe pas ou a été désactivé.</p>
+      <a href="/public/index.html" class="btn-download" style="text-decoration: none; display: inline-block; width: auto; padding: 0.8rem 2rem;">
+        Retour à l'accueil
+      </a>
+    </div>
 
     <!-- ====================================================================
          CONTENU PRINCIPAL
          ==================================================================== -->
-    <main class="main-content">
+    <main class="main-content hidden" id="main-app-content">
 
       <!-- Panneau gauche : Formulaire -->
       <section class="control-panel">
@@ -268,11 +289,11 @@
                     <h2 id="card-user-name" class="user-name-output">Votre Nom Complet</h2>
                   </div>
 
-                  <p class="confirmation-statement">
+                  <p class="confirmation-statement" id="confirmation-statement-block">
                     confirme ma participation à la journée de <span class="highlight-texte">Remise des
                       Attestations</span> de fin de formation en <span class="highlight-text">Intelligence
                       Artificielle</span> organisée par ARIF
-                    <span class="org-subtitle">(Association pour la Réussite et l'Insertion des Femmes)</span>
+                    <span class="org-subtitle" id="card-org-subtitle">(Association pour la Réussite et l'Insertion des Femmes)</span>
                   </p>
                 </div>
 
@@ -288,7 +309,7 @@
                     </div>
                     <div class="detail-text-box">
                       <span class="detail-label">Lieu</span>
-                      <span class="detail-value">Mairie Ville de Rufisque</span>
+                      <span class="detail-value" id="card-venue">Mairie Ville de Rufisque</span>
                     </div>
                   </div>
 
@@ -302,7 +323,7 @@
                     </div>
                     <div class="detail-text-box">
                       <span class="detail-label">Heure</span>
-                      <span class="detail-value">À partir de 09h00</span>
+                      <span class="detail-value" id="card-time">À partir de 09h00</span>
                     </div>
                   </div>
                 </div>
@@ -349,18 +370,19 @@
   </div>
 
   <!-- ======================================================================
-       SCRIPTS — Firebase v8 compat (maintenu pour compatibilité V1)
-       Migration vers Firebase v9 modular prévue en Phase 2 finale
+       SCRIPTS — Firebase SDK
        ====================================================================== -->
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
 
-  <!-- Modules Card Engine (ordre important : config → renderer → export) -->
+  <!-- Modules Card Engine -->
   <script src="../js/card-engine/layout-config.js"></script>
   <script src="../js/card-engine/canvas-renderer.js"></script>
   <script src="../js/card-engine/card-export.js"></script>
 
-  <!-- Contrôleur principal de la page -->
+  <!-- Modules Participant -->
+  <script src="../js/participant/event-loader.js"></script>
+  <script src="../js/participant/seed-events.js"></script>
   <script src="../js/participant/page-controller.js"></script>
 
 </body>
