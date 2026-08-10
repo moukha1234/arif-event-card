@@ -1,0 +1,62 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // =========================================================================
+    // ÉVÉNEMENTS — Lecture publique (actifs seulement), écriture admin
+    // =========================================================================
+    match /events/{eventId} {
+      allow read: if resource.data.status == "active";
+      allow write: if isAdmin();
+    }
+
+    // =========================================================================
+    // PARTICIPANTS — Création publique contrôlée, lecture/modification admin
+    // =========================================================================
+    match /participants/{participantId} {
+      allow create: if validParticipantCreate();
+      allow read:   if isAdmin();
+      allow update: if isAdmin();
+      allow delete: if isSuperAdmin();
+    }
+
+    // =========================================================================
+    // PAIEMENTS — Aucun accès direct depuis le client (Cloud Functions only)
+    // =========================================================================
+    match /payments/{paymentId} {
+      allow read, write: if false;
+    }
+
+    // =========================================================================
+    // ADMINS — Lecture par l'admin lui-même, écriture superadmin
+    // =========================================================================
+    match /admins/{uid} {
+      allow read: if request.auth != null && request.auth.uid == uid;
+      allow write: if isSuperAdmin();
+    }
+
+    // =========================================================================
+    // FONCTIONS UTILITAIRES
+    // =========================================================================
+
+    function isAdmin() {
+      return request.auth != null
+        && exists(/databases/$(database)/documents/admins/$(request.auth.uid));
+    }
+
+    function isSuperAdmin() {
+      return isAdmin()
+        && get(/databases/$(database)/documents/admins/$(request.auth.uid)).data.role == "superadmin";
+    }
+
+    function validParticipantCreate() {
+      let data = request.resource.data;
+      return data.keys().hasAll(['name', 'eventId'])
+        && data.name is string
+        && data.name.size() > 0
+        && data.name.size() <= 100
+        && data.eventId is string
+        && data.eventId.size() > 0;
+    }
+  }
+}
