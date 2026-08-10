@@ -1,23 +1,17 @@
 {
   "hosting": {
-    "public": "public",
+    "public": ".",
     "ignore": [
       "firebase.json",
       "**/.*",
-      "**/node_modules/**"
+      "**/node_modules/**",
+      "README.md",
+      ".gitignore",
+      "firestore.rules",
+      "storage.rules",
+      "functions/**"
     ],
     "cleanUrls": true,
-    "trailingSlash": false,
-    "rewrites": [
-      {
-        "source": "/e/**",
-        "destination": "/index.html"
-      },
-      {
-        "source": "/admin/**",
-        "destination": "/admin/index.html"
-      }
-    ],
     "headers": [
       {
         "source": "**",
@@ -33,24 +27,6 @@
           {
             "key": "X-XSS-Protection",
             "value": "1; mode=block"
-          }
-        ]
-      },
-      {
-        "source": "**/*.@(jpg|jpeg|png|gif|webp|svg|ico)",
-        "headers": [
-          {
-            "key": "Cache-Control",
-            "value": "public, max-age=604800, immutable"
-          }
-        ]
-      },
-      {
-        "source": "**/*.@(css|js)",
-        "headers": [
-          {
-            "key": "Cache-Control",
-            "value": "public, max-age=3600"
           }
         ]
       }

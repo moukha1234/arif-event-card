@@ -181,7 +181,7 @@ async function exportCard(options) {
         svgToImage(starSvg, 22, 22),
         svgToImage(pinSvg,  22, 22),
         svgToImage(clockSvg, 22, 22),
-        loadImage('logo-arif-cropped.jpg'),
+        loadImage((document.querySelector('.card-logo') && document.querySelector('.card-logo').src) || '../images/logo-arif-cropped.jpg'),
         userImgSrc ? loadImage(userImgSrc) : Promise.resolve(null),
         svgToImage(placeholderSvg, layoutConfig.profile.clipRadius, layoutConfig.profile.clipRadius)
       ]);
