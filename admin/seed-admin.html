@@ -69,8 +69,9 @@
       font-size: 0.85rem;
       display: none;
     }
-    .success { background: rgba(16,185,129,0.1); border: 1px solid rgba(16,185,129,0.3); color: #6EE7B7; }
-    .error   { background: rgba(239,68,68,0.1);  border: 1px solid rgba(239,68,68,0.3);  color: #FCA5A5; }
+    .success { background: rgba(16,185,129,0.1); border: 1px solid rgba(16,185,129,0.3); color: #6EE7B7; white-space: pre-wrap; line-height: 1.5; }
+    .error   { background: rgba(239,68,68,0.1);  border: 1px solid rgba(239,68,68,0.3);  color: #FCA5A5; white-space: pre-wrap; line-height: 1.5; }
+    .warning-card { background: rgba(245,158,11,0.12); border: 1px solid rgba(245,158,11,0.35); color: #FCD34D; white-space: pre-wrap; line-height: 1.6; font-size: 0.82rem; }
   </style>
 </head>
 <body>
@@ -145,54 +146,71 @@
         let uid;
 
         try {
-          // 1. Tenter de créer le compte Firebase Auth
-          const credential = await auth.createUserWithEmailAndPassword(email, pass);
-          uid = credential.user.uid;
-          await credential.user.updateProfile({ displayName: name });
-          console.log('[SeedAdmin] Compte Auth créé, UID :', uid);
-        } catch (authCreateErr) {
-          if (authCreateErr.code === 'auth/email-already-in-use') {
-            // Le compte Auth existe déjà -> Se connecter pour obtenir l'UID
-            console.log('[SeedAdmin] Compte déjà existant dans Auth. Connexion pour récupérer UID...');
-            const cred = await auth.signInWithEmailAndPassword(email, pass);
-            uid = cred.user.uid;
-            await cred.user.updateProfile({ displayName: name });
-            console.log('[SeedAdmin] Connexion réussie. UID :', uid);
+          // 1. Tenter la connexion (si le compte existe déjà)
+          const cred = await auth.signInWithEmailAndPassword(email, pass);
+          uid = cred.user.uid;
+          if (name) {
+            try { await cred.user.updateProfile({ displayName: name }); } catch (e) {}
+          }
+          console.log('[SeedAdmin] Authentification réussie pour compte existant. UID :', uid);
+        } catch (signInErr) {
+          if (signInErr.code === 'auth/user-not-found' || signInErr.code === 'auth/invalid-credential' || signInErr.code === 'auth/invalid-email') {
+            // Le compte n'existe pas -> Le créer
+            console.log('[SeedAdmin] Compte non trouvé. Création dans Firebase Auth...');
+            const newCred = await auth.createUserWithEmailAndPassword(email, pass);
+            uid = newCred.user.uid;
+            if (name) {
+              try { await newCred.user.updateProfile({ displayName: name }); } catch (e) {}
+            }
+            console.log('[SeedAdmin] Compte créé dans Firebase Auth. UID :', uid);
           } else {
-            throw authCreateErr;
+            throw signInErr;
           }
         }
 
-        // 2. Créer ou mettre à jour le document admins/{uid} dans Firestore
-        await db.collection('admins').doc(uid).set({
-          uid,
-          email,
-          displayName: name,
-          name:        name,
-          role,
-          active:    true,
-          createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-          updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-        }, { merge: true });
+        // 2. Tenter d'enregistrer dans Firestore
+        let firestoreOk = false;
+        try {
+          await db.collection('admins').doc(uid).set({
+            uid:         uid,
+            email:       email,
+            displayName: name || email,
+            name:        name || email,
+            role:        role,
+            active:      true,
+            createdAt:   firebase.firestore.FieldValue.serverTimestamp(),
+            updatedAt:   firebase.firestore.FieldValue.serverTimestamp()
+          }, { merge: true });
+          firestoreOk = true;
+        } catch (fsErr) {
+          console.warn('[SeedAdmin] Écriture Firestore bloquée par les règles de sécurité :', fsErr.code);
+        }
 
-        showResult(
-          `✅ Profil Administrateur configuré avec succès !\n\n• UID Firebase : ${uid}\n• E-mail : ${email}\n• Document Firestore : admins/${uid}\n• Rôle : ${role}\n• Statut : Actif\n\n👉 Vous pouvez maintenant vous connecter sur /admin/`,
-          'success'
-        );
+        if (firestoreOk) {
+          showResult(
+            `✅ SUCCÈS COMPLET !\n\n• Firebase Authentication : Compte valide\n• UID Firebase : ${uid}\n• Firestore : Document admins/${uid} créé/mis à jour avec succès\n• Rôle : ${role}\n• Statut : Actif\n\n👉 Rendez-vous sur /admin/ pour vous connecter !`,
+            'success'
+          );
+        } else {
+          // Les règles Firestore de sécurité interdisent l'écriture client
+          showResult(
+            `🔑 Compte Firebase Auth validé (UID: ${uid})\n\n⚠️ Cependant, vos règles de sécurité Firestore interdisent la création directe depuis le client (ce qui est normal pour la sécurité).\n\nPour activer ce compte admin, ajoutez ce document dans Firebase Console :\n\n1. Allez sur Firestore Database > Collection "admins"\n2. Cliquez sur "Add document"\n3. Document ID : ${uid}\n4. Ajoutez les champs suivants :\n   - uid (string) : "${uid}"\n   - email (string) : "${email}"\n   - displayName (string) : "${name || email}"\n   - role (string) : "${role}"\n   - active (boolean) : true\n\n👉 Une fois ajouté, vous pourrez vous connecter immédiatement sur /admin/ !`,
+            'warning-card'
+          );
+        }
 
       } catch (err) {
         console.error('[SeedAdmin] Erreur :', err);
         const msgs = {
-          'auth/wrong-password':       'Ce compte existe déjà dans Firebase Auth, mais le mot de passe saisi est incorrect. Veuillez entrer le bon mot de passe associé.',
+          'auth/wrong-password':       'Ce compte existe déjà dans Firebase Auth mais le mot de passe est incorrect.',
           'auth/invalid-credential':   'Identifiants incorrects pour ce compte Firebase existant.',
           'auth/weak-password':        'Mot de passe trop faible (min 8 caractères).',
-          'auth/invalid-email':        'Adresse e-mail invalide.',
-          'permission-denied':         'Erreur de permission Firestore (vérifiez vos règles de sécurité).'
+          'auth/invalid-email':        'Adresse e-mail invalide.'
         };
         showResult('❌ Erreur : ' + (msgs[err.code] || err.message), 'error');
       } finally {
         btn.disabled = false;
-        btn.textContent = 'Créer / Mettre à jour l\'administrateur';
+        btn.textContent = 'Créer / Configurer l\'administrateur';
       }
     });
 

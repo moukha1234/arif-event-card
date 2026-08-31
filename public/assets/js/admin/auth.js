@@ -1,12 +1,12 @@
 /* ==========================================================================
-   J'Y SERAI — ADMIN AUTH MODULE
+   J'Y SERAI — ADMIN AUTH MODULE (ROBUST & SECURE)
    
-   Gère l'authentification Firebase pour le dashboard administrateur.
+   Gère l'authentification Firebase pour le dashboard administrateur :
    - Connexion email + mot de passe
    - Déconnexion
-   - Vérification de session
+   - Synchronisation de session unique via onAuthStateChanged
    - Vérification du rôle admin dans Firestore (admins/{uid})
-   - Redirection automatique si non authentifié
+   - Typage explicite des erreurs (ADMIN_NOT_FOUND, ADMIN_INACTIVE, etc.)
    
    NE JAMAIS mettre de mot de passe ou secret en dur dans ce fichier.
    ========================================================================== */
@@ -16,6 +16,7 @@ const AdminAuth = (() => {
   let _auth = null;
   let _currentUser = null;
   let _adminData = null;
+  let _isLoggingIn = false; // Verrou pour éviter les conflits concurrents avec onAuthStateChanged
 
   // ---------------------------------------------------------------------------
   // Initialisation
@@ -32,7 +33,76 @@ const AdminAuth = (() => {
   }
 
   // ---------------------------------------------------------------------------
-  // Connexion / Déconnexion
+  // Vérification du rôle admin dans Firestore
+  // ---------------------------------------------------------------------------
+
+  /**
+   * Vérifie si un UID est bien enregistré dans la collection admins/.
+   * Ne masque JAMAIS les erreurs Firestore (permission-denied, network, etc.).
+   * @param {string} uid
+   * @returns {Promise<Object>} adminData
+   * @throws {Error} avec code typé (ADMIN_NOT_FOUND, ADMIN_INACTIVE, etc.)
+   */
+  async function checkAdminRole(uid) {
+    if (!_db || !uid) {
+      const err = new Error('Database non initialisée ou UID manquant.');
+      err.code = 'app/not-initialized';
+      throw err;
+    }
+
+    try {
+      console.log(`[AdminAuth] Lecture du document Firestore admins/${uid}...`);
+      const docRef = _db.collection('admins').doc(uid);
+      const doc = await docRef.get();
+
+      if (!doc.exists) {
+        console.warn(`[AdminAuth] Aucun document trouvé pour admins/${uid}`);
+        const notFoundErr = new Error(`Aucun document trouvé dans la collection admins/${uid}`);
+        notFoundErr.code = 'ADMIN_NOT_FOUND';
+        notFoundErr.uid = uid;
+        throw notFoundErr;
+      }
+
+      const data = doc.data() || {};
+
+      // Vérifier que le compte est actif
+      if (data.active === false) {
+        console.warn(`[AdminAuth] Compte désactivé pour admins/${uid} (active: false)`);
+        const inactiveErr = new Error('Ce compte administrateur a été désactivé.');
+        inactiveErr.code = 'ADMIN_INACTIVE';
+        inactiveErr.uid = uid;
+        throw inactiveErr;
+      }
+
+      console.log(`[AdminAuth] Profil admin valide — Rôle: ${data.role || 'admin'} — Statut: Actif`);
+      return data;
+
+    } catch (err) {
+      if (err.code === 'ADMIN_NOT_FOUND' || err.code === 'ADMIN_INACTIVE') {
+        throw err;
+      }
+
+      console.error(`[AdminAuth] Erreur Firestore pour admins/${uid} :`, err.code, err.message);
+
+      if (err.code === 'permission-denied') {
+        const permErr = new Error('Accès refusé par les règles de sécurité Firestore.');
+        permErr.code = 'FIRESTORE_PERMISSION_DENIED';
+        permErr.uid = uid;
+        throw permErr;
+      }
+
+      if (err.code === 'unavailable') {
+        const unavailErr = new Error('Service Firestore temporairement indisponible.');
+        unavailErr.code = 'FIRESTORE_UNAVAILABLE';
+        throw unavailErr;
+      }
+
+      throw err;
+    }
+  }
+
+  // ---------------------------------------------------------------------------
+  // Connexion email + mot de passe
   // ---------------------------------------------------------------------------
 
   /**
@@ -43,51 +113,44 @@ const AdminAuth = (() => {
    */
   async function loginWithEmail(email, password) {
     if (!_auth || !_db) {
-      console.error('[AdminAuth] Firebase Auth ou Firestore non initialisé.');
-      const err = new Error('Firebase non initialisé correctement.');
+      const err = new Error('Firebase Auth ou Firestore non initialisé.');
       err.code = 'app/not-initialized';
       throw err;
     }
 
+    _isLoggingIn = true;
     console.log('[AdminAuth] Tentative de connexion pour :', email);
 
-    // 1. Connexion Firebase Authentication
-    let credential;
     try {
-      credential = await _auth.signInWithEmailAndPassword(email, password);
-    } catch (authErr) {
-      console.error('[AdminAuth] Échec Firebase Auth :', authErr.code, authErr.message);
-      throw authErr;
+      // 1. Authentification Firebase Auth
+      const credential = await _auth.signInWithEmailAndPassword(email, password);
+      const user = credential.user;
+      console.log('[AdminAuth] Firebase Auth OK — UID :', user.uid);
+
+      // 2. Vérification Firestore admins/{uid}
+      const adminData = await checkAdminRole(user.uid);
+
+      _currentUser = user;
+      _adminData = adminData;
+
+      console.log('[AdminAuth] Connexion administrateur confirmée avec succès.');
+      return { user, adminData };
+
+    } catch (err) {
+      console.error('[AdminAuth] Échec de la connexion :', err.code || err.message);
+
+      // En cas d'erreur de profil admin, déconnecter proprement Firebase Auth
+      if (_auth.currentUser) {
+        try { await _auth.signOut(); } catch (e) {}
+      }
+
+      _currentUser = null;
+      _adminData = null;
+      throw err;
+
+    } finally {
+      _isLoggingIn = false;
     }
-
-    const user = credential.user;
-    console.log('[AdminAuth] Firebase Auth OK — UID :', user.uid);
-
-    // 2. Vérification du profil dans Firestore admins/{uid}
-    console.log(`[AdminAuth] Vérification du document Firestore admins/${user.uid}...`);
-    let adminData;
-    try {
-      adminData = await checkAdminRole(user.uid);
-    } catch (fsErr) {
-      console.error('[AdminAuth] Erreur Firestore lors de la vérification admin :', fsErr);
-      await _auth.signOut();
-      throw fsErr;
-    }
-
-    if (!adminData) {
-      console.warn(`[AdminAuth] Document admins/${user.uid} introuvable ou inactif.`);
-      await _auth.signOut();
-      const notFoundErr = new Error('ADMIN_DOCUMENT_NOT_FOUND');
-      notFoundErr.code = 'admin/document-not-found';
-      notFoundErr.uid = user.uid;
-      throw notFoundErr;
-    }
-
-    _currentUser = user;
-    _adminData = adminData;
-
-    console.log('[AdminAuth] Admin document trouvé — Rôle :', adminData.role);
-    return { user, adminData };
   }
 
   /**
@@ -96,57 +159,18 @@ const AdminAuth = (() => {
    */
   async function logout() {
     if (!_auth) return;
-    await _auth.signOut();
+    try {
+      await _auth.signOut();
+    } catch (err) {
+      console.error('[AdminAuth] Erreur lors de signOut :', err);
+    }
     _currentUser = null;
     _adminData = null;
     console.log('[AdminAuth] Déconnexion effectuée.');
   }
 
   // ---------------------------------------------------------------------------
-  // Vérification du rôle admin
-  // ---------------------------------------------------------------------------
-
-  /**
-   * Vérifie si un UID est bien enregistré dans la collection admins/.
-   * Ne masque JAMAIS les erreurs Firestore (permission-denied, network, etc.).
-   * @param {string} uid
-   * @returns {Promise<Object|null>} adminData ou null si document absent
-   */
-  async function checkAdminRole(uid) {
-    if (!_db || !uid) return null;
-
-    try {
-      const docRef = _db.collection('admins').doc(uid);
-      const doc = await docRef.get();
-
-      if (!doc.exists) {
-        console.warn(`[AdminAuth] Le document admins/${uid} n'existe pas dans Firestore.`);
-        return null;
-      }
-
-      const data = doc.data();
-
-      // Vérifier que le compte est actif
-      if (data.active === false) {
-        console.warn(`[AdminAuth] Le compte admin ${uid} est désactivé (active: false).`);
-        const inactiveErr = new Error('ADMIN_ACCOUNT_INACTIVE');
-        inactiveErr.code = 'admin/account-inactive';
-        throw inactiveErr;
-      }
-
-      return data;
-
-    } catch (err) {
-      if (err.code === 'admin/account-inactive') {
-        throw err;
-      }
-      console.error(`[AdminAuth] Firestore error pour admins/${uid} — code:`, err.code, '— message:', err.message);
-      throw err;
-    }
-  }
-
-  // ---------------------------------------------------------------------------
-  // Observation de session
+  // Observation de session (onAuthStateChanged)
   // ---------------------------------------------------------------------------
 
   /**
@@ -157,22 +181,23 @@ const AdminAuth = (() => {
    */
   function onAuthStateChanged(callback) {
     if (!_auth) return () => {};
+
     return _auth.onAuthStateChanged(async (user) => {
+      // Si loginWithEmail est en train de s'exécuter, on laisse loginWithEmail gérer
+      if (_isLoggingIn) return;
+
       if (user) {
+        console.log('[AdminAuth] Session active détectée pour UID :', user.uid);
         try {
           const adminData = await checkAdminRole(user.uid);
-          if (adminData) {
-            _currentUser = user;
-            _adminData = adminData;
-            callback(user, adminData);
-          } else {
-            console.warn(`[AdminAuth] Session active mais aucun profil dans admins/${user.uid}. Déconnexion.`);
-            await _auth.signOut();
-            callback(null, null);
-          }
+          _currentUser = user;
+          _adminData = adminData;
+          callback(user, adminData);
         } catch (err) {
-          console.error('[AdminAuth] Erreur vérification session :', err);
-          await _auth.signOut();
+          console.warn('[AdminAuth] Session invalide ou non-admin :', err.code || err.message);
+          _currentUser = null;
+          _adminData = null;
+          try { await _auth.signOut(); } catch (e) {}
           callback(null, null);
         }
       } else {
@@ -185,7 +210,6 @@ const AdminAuth = (() => {
 
   /**
    * Redirige vers la page de login si non authentifié.
-   * À appeler en début de page admin protégée.
    */
   function requireAuth() {
     if (!_auth) {
@@ -201,15 +225,10 @@ const AdminAuth = (() => {
         }
         try {
           const adminData = await checkAdminRole(user.uid);
-          if (!adminData) {
-            await _auth.signOut();
-            window.location.href = '/admin/index.html';
-            return;
-          }
           resolve({ user, adminData });
         } catch (err) {
-          console.error('[AdminAuth] requireAuth error:', err);
-          await _auth.signOut();
+          console.error('[AdminAuth] requireAuth échec :', err);
+          try { await _auth.signOut(); } catch (e) {}
           window.location.href = '/admin/index.html';
         }
       });
@@ -223,57 +242,108 @@ const AdminAuth = (() => {
   function getCurrentUser() { return _currentUser; }
   function getAdminData()   { return _adminData; }
 
-  /**
-   * Retourne true si l'admin courant est super_admin.
-   */
   function isSuperAdmin() {
     return _adminData && _adminData.role === 'super_admin';
   }
 
   // ---------------------------------------------------------------------------
-  // Gestion des erreurs Firebase Auth & Firestore (messages FR précis)
+  // Traduction des erreurs en messages clairs et détaillés (FR)
   // ---------------------------------------------------------------------------
 
   /**
-   * Traduit les codes d'erreur en messages français compréhensibles.
+   * Traduit une erreur en message explicite pour l'utilisateur.
    * @param {Object|string} errOrCode
-   * @returns {string}
+   * @returns {{title: string, message: string, uid?: string}}
    */
   function getErrorMessage(errOrCode) {
-    const code = typeof errOrCode === 'string' ? errOrCode : (errOrCode && errOrCode.code ? errOrCode.code : '');
-    const uid  = (errOrCode && errOrCode.uid) ? ` (UID: ${errOrCode.uid})` : '';
+    let code = typeof errOrCode === 'string' ? errOrCode : (errOrCode && errOrCode.code ? errOrCode.code : '');
+    const uid  = (errOrCode && errOrCode.uid) ? errOrCode.uid : '';
+    const rawMsg = (errOrCode && errOrCode.message) ? String(errOrCode.message) : '';
 
-    const messages = {
-      // Firebase Auth
-      'auth/user-not-found':             'Aucun compte trouvé avec cet e-mail dans Firebase Authentication.',
-      'auth/wrong-password':             'Mot de passe incorrect.',
-      'auth/invalid-email':              'Adresse e-mail invalide.',
-      'auth/user-disabled':              'Ce compte a été désactivé dans Firebase Auth.',
-      'auth/too-many-requests':          'Trop de tentatives. Veuillez patienter quelques instants.',
-      'auth/network-request-failed':      'Impossible de contacter Firebase. Vérifiez votre connexion internet.',
-      'auth/invalid-credential':         'Identifiants incorrects (e-mail ou mot de passe invalide).',
-      'auth/invalid-login-credentials':  'Identifiants incorrects (e-mail ou mot de passe invalide).',
-
-      // Firestore & Profil Admin
-      'admin/document-not-found':        `Compte Firebase valide, mais aucun document n'existe dans la collection Firestore admins/${uid}.`,
-      'admin/account-inactive':          'Ce compte administrateur a été désactivé (active: false).',
-      'permission-denied':               'Accès refusé par les règles de sécurité Firestore (permission-denied).',
-      'unavailable':                     'Le service Firestore est temporairement indisponible.',
-      'app/not-initialized':             'Firebase n\'est pas correctement initialisé.'
-    };
-
-    if (messages[code]) return messages[code];
-
-    if (errOrCode && errOrCode.message) {
-      if (errOrCode.message === 'ADMIN_DOCUMENT_NOT_FOUND') {
-        return `Compte Firebase valide, mais aucun profil administrateur n'est configuré dans Firestore (collection 'admins').`;
-      }
-      if (errOrCode.message === 'ADMIN_ACCOUNT_INACTIVE') {
-        return 'Ce compte administrateur est désactivé.';
-      }
+    // Détection des sous-codes d'erreur encapsulés par Firebase (ex: internal-error contenant INVALID_LOGIN_CREDENTIALS)
+    if (rawMsg.includes('INVALID_LOGIN_CREDENTIALS') || rawMsg.includes('INVALID_PASSWORD') || rawMsg.includes('EMAIL_NOT_FOUND')) {
+      code = 'auth/invalid-credential';
+    } else if (rawMsg.includes('USER_DISABLED')) {
+      code = 'auth/user-disabled';
+    } else if (rawMsg.includes('TOO_MANY_ATTEMPTS_TRY_LATER')) {
+      code = 'auth/too-many-requests';
     }
 
-    return 'Une erreur est survenue lors de la connexion. Veuillez vérifier la console du navigateur.';
+    switch (code) {
+      // Firebase Authentication
+      case 'auth/user-not-found':
+        return {
+          title: 'Utilisateur introuvable',
+          message: 'Aucun compte Firebase Authentication n\'existe avec cette adresse e-mail.'
+        };
+
+      case 'auth/wrong-password':
+      case 'auth/invalid-credential':
+      case 'auth/invalid-login-credentials':
+        return {
+          title: 'Identifiants incorrects',
+          message: 'L\'adresse e-mail ou le mot de passe saisi est incorrect.'
+        };
+
+      case 'auth/invalid-email':
+        return {
+          title: 'Format d\'e-mail invalide',
+          message: 'Veuillez saisir une adresse e-mail valide.'
+        };
+
+      case 'auth/user-disabled':
+        return {
+          title: 'Compte désactivé',
+          message: 'Ce compte a été désactivé dans Firebase Authentication.'
+        };
+
+      case 'auth/too-many-requests':
+        return {
+          title: 'Trop de tentatives',
+          message: 'Accès temporairement bloqué suite à de multiples tentatives. Veuillez patienter quelques minutes.'
+        };
+
+      case 'auth/network-request-failed':
+        return {
+          title: 'Erreur réseau',
+          message: 'Impossible de contacter Firebase. Vérifiez votre connexion internet.'
+        };
+
+      // Profil Firestore Admin
+      case 'ADMIN_NOT_FOUND':
+        return {
+          title: 'Profil administrateur absent dans Firestore',
+          message: `Votre compte Firebase Authentication existe bien, mais aucun document n'a été créé dans la collection Firestore "admins".`,
+          uid: uid
+        };
+
+      case 'ADMIN_INACTIVE':
+        return {
+          title: 'Compte administrateur inactif',
+          message: 'Ce compte administrateur est désactivé (active: false). Contactez un super administrateur.',
+          uid: uid
+        };
+
+      case 'FIRESTORE_PERMISSION_DENIED':
+      case 'permission-denied':
+        return {
+          title: 'Refus d\'accès Firestore',
+          message: 'Firebase refuse la lecture du document administrateur. Vérifiez vos règles Firestore (firestore.rules).',
+          uid: uid
+        };
+
+      case 'FIRESTORE_UNAVAILABLE':
+        return {
+          title: 'Firestore indisponible',
+          message: 'La base de données Firestore est temporairement inaccessible. Veuillez réessayer.'
+        };
+
+      default:
+        return {
+          title: 'Erreur de connexion',
+          message: rawMsg ? rawMsg : 'Une erreur inattendue est survenue.'
+        };
+    }
   }
 
   // ---------------------------------------------------------------------------
@@ -293,7 +363,6 @@ const AdminAuth = (() => {
   };
 })();
 
-// Export CommonJS (tests)
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = { AdminAuth };
 }

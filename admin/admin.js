@@ -270,7 +270,10 @@ function initLoginForm() {
     const password = passInput  ? passInput.value : '';
 
     if (!email || !password) {
-      showLoginError('Veuillez remplir tous les champs.');
+      showLoginError({
+        title: 'Champs requis',
+        message: 'Veuillez renseigner votre adresse e-mail et votre mot de passe.'
+      });
       return;
     }
 
@@ -280,23 +283,33 @@ function initLoginForm() {
 
     try {
       await AdminAuth.loginWithEmail(email, password);
-      // onAuthStateChanged prendra le relai automatiquement
+      // onAuthStateChanged ou la résolution amènera au dashboard
     } catch (err) {
-      console.error('[Admin] Login error:', err);
-      const msg = AdminAuth.getErrorMessage(err);
-      showLoginError(msg);
+      console.error('[Admin] Erreur lors de la connexion :', err);
+      const errInfo = AdminAuth.getErrorMessage(err);
+      showLoginError(errInfo);
     } finally {
       if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = 'Se connecter'; }
     }
   });
 }
 
-function showLoginError(msg) {
+function showLoginError(errInfo) {
   const errorEl = document.getElementById('login-error');
-  if (errorEl) {
-    errorEl.textContent = msg;
-    errorEl.style.display = 'block';
+  if (!errorEl) return;
+
+  if (typeof errInfo === 'string') {
+    errorEl.innerHTML = `<div style="font-weight:600;margin-bottom:2px;">Erreur</div><div>${errInfo}</div>`;
+  } else {
+    let html = `<div style="font-weight:700;font-size:0.88rem;margin-bottom:4px;color:#FCA5A5;">${errInfo.title || 'Erreur'}</div>`;
+    html += `<div style="font-size:0.82rem;line-height:1.4;">${errInfo.message}</div>`;
+    if (errInfo.uid) {
+      html += `<div style="margin-top:8px;padding-top:8px;border-top:1px solid rgba(239,68,68,0.25);font-size:0.75rem;font-family:monospace;word-break:break-all;"><strong>UID Firebase :</strong> ${errInfo.uid}</div>`;
+    }
+    errorEl.innerHTML = html;
   }
+
+  errorEl.style.display = 'block';
 }
 
 // ---------------------------------------------------------------------------
