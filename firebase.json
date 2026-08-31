@@ -12,6 +12,16 @@
       "functions/**"
     ],
     "cleanUrls": true,
+    "rewrites": [
+      {
+        "source": "/admin",
+        "destination": "/admin/index.html"
+      },
+      {
+        "source": "/admin/",
+        "destination": "/admin/index.html"
+      }
+    ],
     "headers": [
       {
         "source": "**",
@@ -27,6 +37,15 @@
           {
             "key": "X-XSS-Protection",
             "value": "1; mode=block"
+          }
+        ]
+      },
+      {
+        "source": "/admin/**",
+        "headers": [
+          {
+            "key": "Cache-Control",
+            "value": "no-store, no-cache, must-revalidate"
           }
         ]
       }

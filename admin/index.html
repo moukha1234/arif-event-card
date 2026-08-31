@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard Administrateur — J'y Serai · ARIF</title>
+  <meta name="description" content="Tableau de bord administrateur J'y Serai ARIF — Gestion des événements.">
+  <!-- Pas d'indexation pour les pages admin -->
+  <meta name="robots" content="noindex, nofollow">
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Montserrat:wght@600;700;800;900&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="admin.css">
+</head>
+<body>
+
+  <!-- ========================================================================
+       VUE LOGIN
+       ======================================================================== -->
+  <div id="login-view" class="admin-view active">
+    <div class="login-card">
+      <div class="login-logo">
+        <img src="../public/assets/images/logo-arif-cropped.jpg" alt="Logo ARIF">
+        <div class="login-logo__title">J'y Serai Admin</div>
+        <div class="login-logo__sub">Espace Administrateur</div>
+      </div>
+
+      <div id="login-error" class="login-error" role="alert"></div>
+
+      <form id="login-form" novalidate>
+        <div class="login-form__group">
+          <label class="login-form__label" for="login-email">Adresse e-mail</label>
+          <div class="login-form__input-wrapper">
+            <input
+              type="email"
+              id="login-email"
+              class="login-form__input"
+              placeholder="admin@arif.sn"
+              autocomplete="email"
+              required
+            >
+          </div>
+        </div>
+
+        <div class="login-form__group">
+          <label class="login-form__label" for="login-password">Mot de passe</label>
+          <div class="login-form__input-wrapper">
+            <input
+              type="password"
+              id="login-password"
+              class="login-form__input"
+              placeholder="••••••••"
+              autocomplete="current-password"
+              required
+            >
+            <button type="button" class="login-form__toggle-pass" id="toggle-password" title="Afficher/masquer le mot de passe">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                <circle cx="12" cy="12" r="3"></circle>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <button type="submit" class="btn-login" id="btn-login">Se connecter</button>
+      </form>
+
+      <div class="login-footer">
+        <p>© 2026 ARIF — Association pour la Réussite et l'Insertion des Femmes</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================
+       VUE DASHBOARD
+       ======================================================================== -->
+  <div id="dashboard-view" class="admin-view">
+    <div class="admin-layout">
+
+      <!-- ==================================================================
+           SIDEBAR
+           ================================================================== -->
+      <aside class="admin-sidebar" id="admin-sidebar" role="navigation" aria-label="Menu administrateur">
+
+        <!-- Brand -->
+        <div class="sidebar-brand">
+          <img class="sidebar-brand__logo" src="../public/assets/images/logo-arif-cropped.jpg" alt="Logo ARIF">
+          <div class="sidebar-brand__text">
+            <span class="sidebar-brand__name">J'y Serai</span>
+            <span class="sidebar-brand__tagline">Administration</span>
+          </div>
+        </div>
+
+        <!-- Navigation principale -->
+        <nav class="sidebar-nav">
+          <div class="sidebar-nav__section-label">Principal</div>
+
+          <div class="nav-item active" data-section="dashboard" role="button" tabindex="0" id="nav-dashboard">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="3" width="7" height="7"></rect>
+              <rect x="14" y="3" width="7" height="7"></rect>
+              <rect x="14" y="14" width="7" height="7"></rect>
+              <rect x="3" y="14" width="7" height="7"></rect>
+            </svg>
+            <span class="nav-label">Dashboard</span>
+          </div>
+
+          <div class="sidebar-nav__section-label">Événements</div>
+
+          <div class="nav-item" data-section="events" role="button" tabindex="0" id="nav-events">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+              <line x1="16" y1="2" x2="16" y2="6"></line>
+              <line x1="8" y1="2" x2="8" y2="6"></line>
+              <line x1="3" y1="10" x2="21" y2="10"></line>
+            </svg>
+            <span class="nav-label">Événements</span>
+          </div>
+
+          <div class="nav-item" data-section="event-editor" role="button" tabindex="0" id="nav-create-event" id="btn-create-event-nav">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"></circle>
+              <line x1="12" y1="8" x2="12" y2="16"></line>
+              <line x1="8" y1="12" x2="16" y2="12"></line>
+            </svg>
+            <span class="nav-label">Créer un événement</span>
+          </div>
+
+          <div class="sidebar-nav__section-label">Données</div>
+
+          <div class="nav-item" data-section="participants" role="button" tabindex="0" id="nav-participants">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+              <circle cx="9" cy="7" r="4"></circle>
+              <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+              <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+            </svg>
+            <span class="nav-label">Participants</span>
+          </div>
+
+          <div class="nav-item" data-section="payments" role="button" tabindex="0" id="nav-payments">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect>
+              <line x1="1" y1="10" x2="23" y2="10"></line>
+            </svg>
+            <span class="nav-label">Paiements</span>
+          </div>
+
+          <div class="sidebar-nav__section-label">Système</div>
+
+          <div class="nav-item super-admin-only" data-section="administrators" role="button" tabindex="0" id="nav-administrators">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+            </svg>
+            <span class="nav-label">Administrateurs</span>
+          </div>
+
+          <div class="nav-item" data-section="settings" role="button" tabindex="0" id="nav-settings">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="3"></circle>
+              <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+            </svg>
+            <span class="nav-label">Paramètres</span>
+          </div>
+
+          <!-- Déconnexion -->
+          <div style="padding: 8px 0; margin-top: 8px; border-top: 1px solid rgba(255,255,255,0.06);">
+            <div class="nav-item nav-danger" role="button" tabindex="0" id="btn-logout">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                <polyline points="16 17 21 12 16 7"></polyline>
+                <line x1="21" y1="12" x2="9" y2="12"></line>
+              </svg>
+              <span class="nav-label">Déconnexion</span>
+            </div>
+          </div>
+        </nav>
+
+        <!-- User Info -->
+        <div class="sidebar-user">
+          <div class="user-avatar" id="admin-user-avatar">A</div>
+          <div class="user-info">
+            <div class="user-info__name" id="admin-user-name">Administrateur</div>
+            <div class="user-info__email" id="admin-user-email"></div>
+            <span class="user-info__role" id="admin-user-role">admin</span>
+          </div>
+        </div>
+      </aside>
+
+      <!-- Overlay mobile -->
+      <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+      <!-- ==================================================================
+           MAIN
+           ================================================================== -->
+      <main class="admin-main">
+
+        <!-- Header -->
+        <header class="admin-header">
+          <button class="btn-toggle-sidebar" id="btn-toggle-sidebar" title="Menu" aria-label="Ouvrir le menu">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="3" y1="12" x2="21" y2="12"></line>
+              <line x1="3" y1="6" x2="21" y2="6"></line>
+              <line x1="3" y1="18" x2="21" y2="18"></line>
+            </svg>
+          </button>
+          <h1 class="admin-page-title" id="admin-page-title">Dashboard</h1>
+          <div class="header-actions">
+            <button class="admin-btn admin-btn--primary" id="btn-create-event-nav" onclick="AdminEventEditor.newEvent()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px">
+                <line x1="12" y1="5" x2="12" y2="19"></line>
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+              </svg>
+              Créer un événement
+            </button>
+          </div>
+        </header>
+
+        <!-- Contenu -->
+        <div class="admin-content">
+
+          <!-- ================================================================
+               SECTION : DASHBOARD
+               ================================================================ -->
+          <section id="section-dashboard" class="admin-section active">
+            <div class="section-header">
+              <h2 class="section-title">Vue d'ensemble</h2>
+              <p class="section-subtitle">Statistiques globales de la plateforme J'y Serai</p>
+            </div>
+
+            <!-- Grille stats -->
+            <div class="stats-grid" id="stats-grid">
+              <!-- Rempli dynamiquement par dashboard.js -->
+              <div class="stat-card-skeleton"></div>
+              <div class="stat-card-skeleton"></div>
+              <div class="stat-card-skeleton"></div>
+              <div class="stat-card-skeleton"></div>
+              <div class="stat-card-skeleton"></div>
+              <div class="stat-card-skeleton"></div>
+            </div>
+
+            <!-- Événements récents -->
+            <div class="dashboard-panel">
+              <div class="dashboard-panel__header">
+                <h3 class="dashboard-panel__title">Événements récents</h3>
+                <button class="admin-btn admin-btn--ghost" onclick="AdminUI.showSection('events')" style="font-size:0.8rem;padding:6px 12px;">
+                  Voir tous →
+                </button>
+              </div>
+              <div class="table-responsive">
+                <table class="admin-table">
+                  <thead>
+                    <tr>
+                      <th>Événement</th>
+                      <th>Statut</th>
+                      <th>Participants</th>
+                      <th>Créé le</th>
+                    </tr>
+                  </thead>
+                  <tbody id="recent-events-tbody">
+                    <tr><td colspan="4" class="table-empty">Chargement...</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </section>
+
+          <!-- ================================================================
+               SECTION : LISTE ÉVÉNEMENTS
+               ================================================================ -->
+          <section id="section-events" class="admin-section">
+            <div class="section-header" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">
+              <div>
+                <h2 class="section-title">Événements</h2>
+                <p class="section-subtitle">Gérez tous vos événements Firestore</p>
+              </div>
+              <button class="admin-btn admin-btn--primary" onclick="AdminEventEditor.newEvent()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                Créer un événement
+              </button>
+            </div>
+
+            <!-- Filtres -->
+            <div class="events-filters">
+              <button class="events-filter-btn active" data-filter="all">Tous</button>
+              <button class="events-filter-btn" data-filter="active">Actifs</button>
+              <button class="events-filter-btn" data-filter="inactive">Inactifs</button>
+              <button class="events-filter-btn" data-filter="draft">Brouillons</button>
+            </div>
+
+            <div id="events-table-container">
+              <!-- Rempli dynamiquement par events.js -->
+              <div class="admin-loading">
+                <div class="admin-spinner"></div>
+                <p>Chargement des événements...</p>
+              </div>
+            </div>
+          </section>
+
+          <!-- ================================================================
+               SECTION : ÉDITEUR D'ÉVÉNEMENT
+               ================================================================ -->
+          <section id="section-event-editor" class="admin-section">
+            <div class="section-header" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">
+              <div>
+                <h2 class="section-title" id="editor-section-title">Créer un événement</h2>
+                <p class="section-subtitle">Remplissez le formulaire et visualisez l'affiche en temps réel</p>
+              </div>
+              <button class="admin-btn admin-btn--ghost" onclick="AdminUI.showSection('events')">
+                ← Retour aux événements
+              </button>
+            </div>
+
+            <div class="editor-layout">
+
+              <!-- Formulaire -->
+              <div class="editor-form-panel">
+                <form id="event-editor-form" novalidate>
+
+                  <!-- Informations générales -->
+                  <div class="form-section">
+                    <div class="form-section__title">Informations générales</div>
+
+                    <div class="form-group">
+                      <label class="form-label" for="ev-name">Nom de l'événement *</label>
+                      <input type="text" id="ev-name" class="form-control" placeholder="Ex: Grand Bourdou Populaire 2026" required>
+                    </div>
+
+                    <div class="form-row">
+                      <div class="form-group">
+                        <label class="form-label" for="ev-slug">Slug (URL) *</label>
+                        <input type="text" id="ev-slug" class="form-control" placeholder="grand-bourdou-populaire-2026" pattern="[a-z0-9-]+" required>
+                        <small style="color:var(--text-muted);font-size:0.72rem;margin-top:4px;display:block">URL publique : /e/{slug}</small>
+                      </div>
+                      <div class="form-group">
+                        <label class="form-label" for="ev-status">Statut</label>
+                        <select id="ev-status" class="form-control">
+                          <option value="draft">Brouillon</option>
+                          <option value="active">Actif</option>
+                          <option value="inactive">Inactif</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <div class="form-group">
+                      <label class="form-label" for="ev-description">Description</label>
+                      <textarea id="ev-description" class="form-control" rows="2" placeholder="Description de l'événement..."></textarea>
+                    </div>
+
+                    <div class="form-group">
+                      <label class="form-label" for="ev-organization">Organisation</label>
+                      <input type="text" id="ev-organization" class="form-control" placeholder="Ex: Association ARIF">
+                    </div>
+                  </div>
+
+                  <!-- Date & Lieu -->
+                  <div class="form-section">
+                    <div class="form-section__title">Date, Heure & Lieu</div>
+
+                    <div class="form-row">
+                      <div class="form-group">
+                        <label class="form-label" for="ev-date">Date</label>
+                        <input type="date" id="ev-date" class="form-control">
+                      </div>
+                      <div class="form-group">
+                        <label class="form-label" for="ev-time">Heure</label>
+                        <input type="text" id="ev-time" class="form-control" placeholder="Ex: À partir de 09h00">
+                      </div>
+                    </div>
+
+                    <div class="form-group">
+                      <label class="form-label" for="ev-venue">Lieu</label>
+                      <input type="text" id="ev-venue" class="form-control" placeholder="Ex: Mairie de Rufisque">
+                    </div>
+                  </div>
+
+                  <!-- Badge Date (affiché sur l'affiche) -->
+                  <div class="form-section">
+                    <div class="form-section__title">Badge Date (affiche)</div>
+                    <div class="form-row">
+                      <div class="form-group">
+                        <label class="form-label" for="ev-badge-day">Jour</label>
+                        <input type="text" id="ev-badge-day" class="form-control" placeholder="20" maxlength="2">
+                      </div>
+                      <div class="form-group">
+                        <label class="form-label" for="ev-badge-month">Mois</label>
+                        <input type="text" id="ev-badge-month" class="form-control" placeholder="JUIN" maxlength="5">
+                      </div>
+                      <div class="form-group">
+                        <label class="form-label" for="ev-badge-time">Heure badge</label>
+                        <input type="text" id="ev-badge-time" class="form-control" placeholder="09h00">
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Prix -->
+                  <div class="form-section">
+                    <div class="form-section__title">Tarification</div>
+
+                    <div class="form-group">
+                      <div class="toggle-group">
+                        <label class="toggle-switch">
+                          <input type="checkbox" id="ev-is-free" checked>
+                          <span class="toggle-slider"></span>
+                        </label>
+                        <span class="toggle-label">Événement gratuit</span>
+                      </div>
+                    </div>
+
+                    <div id="price-group" style="display:none">
+                      <div class="form-row">
+                        <div class="form-group">
+                          <label class="form-label" for="ev-price">Prix</label>
+                          <input type="number" id="ev-price" class="form-control" min="0" value="0" placeholder="500">
+                        </div>
+                        <div class="form-group">
+                          <label class="form-label" for="ev-currency">Devise</label>
+                          <select id="ev-currency" class="form-control">
+                            <option value="XOF">XOF (FCFA)</option>
+                            <option value="EUR">EUR (€)</option>
+                            <option value="USD">USD ($)</option>
+                          </select>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Design — Couleurs -->
+                  <div class="form-section">
+                    <div class="form-section__title">Couleurs de l'affiche</div>
+
+                    <div class="form-row">
+                      <div class="form-group">
+                        <label class="form-label" for="ev-primary-color">Couleur principale</label>
+                        <div class="color-input-wrapper">
+                          <input type="color" id="ev-primary-color" class="form-control form-control--color" value="#E2007A">
+                          <input type="text" class="form-control color-hex-input" id="ev-primary-color-hex" value="#E2007A" maxlength="7" placeholder="#E2007A">
+                        </div>
+                      </div>
+                      <div class="form-group">
+                        <label class="form-label" for="ev-secondary-color">Couleur secondaire</label>
+                        <div class="color-input-wrapper">
+                          <input type="color" id="ev-secondary-color" class="form-control form-control--color" value="#00A1C9">
+                          <input type="text" class="form-control color-hex-input" id="ev-secondary-color-hex" value="#00A1C9" maxlength="7" placeholder="#00A1C9">
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Design — Logo -->
+                  <div class="form-section">
+                    <div class="form-section__title">Logo & Image</div>
+
+                    <div class="form-group">
+                      <label class="form-label">Logo de l'événement</label>
+                      <label class="logo-upload-zone" for="ev-logo-input">
+                        <input type="file" id="ev-logo-input" accept="image/*" style="display:none">
+                        <img id="ev-logo-preview" class="ev-logo-preview" src="" alt="Aperçu logo">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="width:32px;height:32px;margin:0 auto 8px;opacity:0.4">
+                          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                          <polyline points="17 8 12 3 7 8"></polyline>
+                          <line x1="12" y1="3" x2="12" y2="15"></line>
+                        </svg>
+                        <p style="font-size:0.8rem;color:var(--text-muted)">Cliquez pour sélectionner un logo (JPG/PNG, max 5Mo)</p>
+                      </label>
+                    </div>
+                  </div>
+
+                  <!-- Design — Textes -->
+                  <div class="form-section">
+                    <div class="form-section__title">Textes de l'affiche</div>
+
+                    <div class="form-group">
+                      <label class="form-label" for="ev-confirmation-text">Texte de confirmation</label>
+                      <textarea id="ev-confirmation-text" class="form-control" rows="3"
+                        placeholder="Ex: confirme ma participation à la journée de Remise des Attestations..."></textarea>
+                    </div>
+
+                    <div class="form-group">
+                      <label class="form-label" for="ev-org-subtitle">Sous-titre organisation</label>
+                      <input type="text" id="ev-org-subtitle" class="form-control"
+                        placeholder="Ex: (Association pour la Réussite et l'Insertion des Femmes)">
+                    </div>
+                  </div>
+
+                  <!-- Design — Positionnement Photo -->
+                  <div class="form-section">
+                    <div class="form-section__title">Positionnement Photo Participant</div>
+
+                    <div class="form-group">
+                      <label class="form-label">Rayon du cadre photo : <span class="slider-value" id="val-photo-radius">135</span>px</label>
+                      <div class="slider-field">
+                        <input type="range" id="ev-photo-radius" min="80" max="160" value="135">
+                      </div>
+                    </div>
+
+                    <div class="form-row">
+                      <div class="form-group">
+                        <label class="form-label">Position X : <span class="slider-value" id="val-photo-x">400</span>px</label>
+                        <div class="slider-field">
+                          <input type="range" id="ev-photo-x" min="200" max="600" value="400">
+                        </div>
+                      </div>
+                      <div class="form-group">
+                        <label class="form-label">Position Y : <span class="slider-value" id="val-photo-y">445</span>px</label>
+                        <div class="slider-field">
+                          <input type="range" id="ev-photo-y" min="300" max="600" value="445">
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Actions -->
+                  <div class="form-actions-row">
+                    <button type="button" class="admin-btn admin-btn--primary" id="btn-save-event">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px">
+                        <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+                        <polyline points="17 21 17 13 7 13 7 21"></polyline>
+                        <polyline points="7 3 7 8 15 8"></polyline>
+                      </svg>
+                      Créer l'événement
+                    </button>
+                    <button type="button" class="admin-btn admin-btn--ghost" id="btn-cancel-event">
+                      Annuler
+                    </button>
+                  </div>
+
+                </form>
+              </div>
+
+              <!-- Prévisualisation Canvas -->
+              <div class="preview-panel">
+                <div class="preview-panel__header">
+                  <span class="preview-panel__title">Aperçu de l'affiche</span>
+                  <span class="live-badge">LIVE</span>
+                </div>
+                <div class="preview-canvas-wrapper">
+                  <canvas id="admin-preview-canvas" width="800" height="1000"></canvas>
+                </div>
+                <div class="preview-actions">
+                  <button class="admin-btn admin-btn--ghost" id="btn-preview-png" style="width:100%;justify-content:center;font-size:0.8rem">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px">
+                      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                      <polyline points="7 10 12 15 17 10"></polyline>
+                      <line x1="12" y1="15" x2="12" y2="3"></line>
+                    </svg>
+                    Exporter PNG (prévisualisation)
+                  </button>
+                </div>
+              </div>
+
+            </div>
+          </section>
+
+          <!-- ================================================================
+               SECTION : PARTICIPANTS
+               ================================================================ -->
+          <section id="section-participants" class="admin-section">
+            <div class="section-header">
+              <h2 class="section-title">Participants</h2>
+              <p class="section-subtitle">Liste de toutes les inscriptions enregistrées</p>
+            </div>
+            <div id="participants-container">
+              <div class="admin-loading">
+                <div class="admin-spinner"></div>
+                <p>Chargement des participants...</p>
+              </div>
+            </div>
+          </section>
+
+          <!-- ================================================================
+               SECTION : PAIEMENTS
+               ================================================================ -->
+          <section id="section-payments" class="admin-section">
+            <div class="section-header">
+              <h2 class="section-title">Paiements</h2>
+              <p class="section-subtitle">Suivi des paiements Wave / Orange Money (Phase 7)</p>
+            </div>
+            <div class="section-body"><!-- Rempli par renderComingSoon() --></div>
+          </section>
+
+          <!-- ================================================================
+               SECTION : ADMINISTRATEURS (super_admin seulement)
+               ================================================================ -->
+          <section id="section-administrators" class="admin-section super-admin-only">
+            <div class="section-header">
+              <h2 class="section-title">Administrateurs</h2>
+              <p class="section-subtitle">Gestion des comptes admin (super_admin uniquement)</p>
+            </div>
+            <div class="section-body"><!-- Rempli par renderComingSoon() --></div>
+          </section>
+
+          <!-- ================================================================
+               SECTION : PARAMÈTRES
+               ================================================================ -->
+          <section id="section-settings" class="admin-section">
+            <div class="section-header">
+              <h2 class="section-title">Paramètres</h2>
+              <p class="section-subtitle">Configuration globale de la plateforme</p>
+            </div>
+            <div class="section-body"><!-- Rempli par renderComingSoon() --></div>
+          </section>
+
+        </div><!-- /.admin-content -->
+      </main><!-- /.admin-main -->
+    </div><!-- /.admin-layout -->
+  </div><!-- /#dashboard-view -->
+
+  <!-- Toast container -->
+  <div id="toast-container" aria-live="polite"></div>
+
+  <!-- ========================================================================
+       SCRIPTS
+       ======================================================================== -->
+
+  <!-- Firebase SDK v8 compat -->
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-storage.js"></script>
+
+  <!-- Card Engine (réutilisation du moteur existant) -->
+  <script src="../public/assets/js/card-engine/layout-config.js"></script>
+  <script src="../public/assets/js/card-engine/canvas-renderer.js"></script>
+
+  <!-- Modules Admin -->
+  <script src="../public/assets/js/admin/admin-ui.js"></script>
+  <script src="../public/assets/js/admin/auth.js"></script>
+  <script src="../public/assets/js/admin/dashboard.js"></script>
+  <script src="../public/assets/js/admin/events.js"></script>
+  <script src="../public/assets/js/admin/event-editor.js"></script>
+
+  <!-- Orchestrateur principal -->
+  <script src="admin.js"></script>
+
+  <!-- Script inline : synchronisation color picker ↔ hex input + slider values -->
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      // Synchronisation color picker ↔ input hex
+      function syncColor(colorId, hexId) {
+        const colorEl = document.getElementById(colorId);
+        const hexEl   = document.getElementById(hexId);
+        if (!colorEl || !hexEl) return;
+
+        colorEl.addEventListener('input', () => {
+          hexEl.value = colorEl.value;
+          // Déclencher la mise à jour de preview
+          colorEl.dispatchEvent(new Event('input', { bubbles: false }));
+          if (typeof AdminEventEditor !== 'undefined') AdminEventEditor.schedulePreviewUpdate();
+        });
+
+        hexEl.addEventListener('input', () => {
+          const val = hexEl.value.trim();
+          if (/^#[0-9A-Fa-f]{6}$/.test(val)) {
+            colorEl.value = val;
+            if (typeof AdminEventEditor !== 'undefined') AdminEventEditor.schedulePreviewUpdate();
+          }
+        });
+      }
+
+      syncColor('ev-primary-color', 'ev-primary-color-hex');
+      syncColor('ev-secondary-color', 'ev-secondary-color-hex');
+
+      // Slider values display
+      function syncSlider(sliderId, valId) {
+        const slider = document.getElementById(sliderId);
+        const valEl  = document.getElementById(valId);
+        if (!slider || !valEl) return;
+        valEl.textContent = slider.value;
+        slider.addEventListener('input', () => {
+          valEl.textContent = slider.value;
+        });
+      }
+
+      syncSlider('ev-photo-radius', 'val-photo-radius');
+      syncSlider('ev-photo-x',      'val-photo-x');
+      syncSlider('ev-photo-y',      'val-photo-y');
+    });
+  </script>
+
+</body>
+</html>

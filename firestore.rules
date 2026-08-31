@@ -3,11 +3,16 @@ service cloud.firestore {
   match /databases/{database}/documents {
 
     // =========================================================================
-    // ÉVÉNEMENTS — Lecture publique (actifs seulement), écriture admin
+    // ÉVÉNEMENTS
+    // — Lecture publique : seulement les événements actifs
+    // — Lecture admin : tous les événements (tous statuts)
+    // — Écriture : admins authentifiés seulement
     // =========================================================================
     match /events/{eventId} {
-      allow read: if resource.data.status == "active";
-      allow write: if isAdmin();
+      allow read:   if resource.data.status == "active" || isAdmin();
+      allow create: if isAdmin();
+      allow update: if isAdmin();
+      allow delete: if isAdmin();
     }
 
     // =========================================================================
@@ -22,16 +27,17 @@ service cloud.firestore {
 
     // =========================================================================
     // PAIEMENTS — Aucun accès direct depuis le client (Cloud Functions only)
+    // Les montants et statuts de paiement ne sont JAMAIS modifiables côté client
     // =========================================================================
     match /payments/{paymentId} {
       allow read, write: if false;
     }
 
     // =========================================================================
-    // ADMINS — Lecture par l'admin lui-même, écriture superadmin
+    // ADMINS — Lecture par l'admin lui-même, écriture superadmin uniquement
     // =========================================================================
     match /admins/{uid} {
-      allow read: if request.auth != null && request.auth.uid == uid;
+      allow read:  if request.auth != null && request.auth.uid == uid;
       allow write: if isSuperAdmin();
     }
 
@@ -39,16 +45,32 @@ service cloud.firestore {
     // FONCTIONS UTILITAIRES
     // =========================================================================
 
+    /**
+     * Vérifie que l'utilisateur est authentifié ET possède un document
+     * dans admins/{uid} avec active != false.
+     */
     function isAdmin() {
       return request.auth != null
-        && exists(/databases/$(database)/documents/admins/$(request.auth.uid));
+        && exists(/databases/$(database)/documents/admins/$(request.auth.uid))
+        && get(/databases/$(database)/documents/admins/$(request.auth.uid)).data.active != false;
     }
 
+    /**
+     * Vérifie que l'utilisateur est admin ET possède le rôle super_admin.
+     */
     function isSuperAdmin() {
       return isAdmin()
-        && get(/databases/$(database)/documents/admins/$(request.auth.uid)).data.role == "superadmin";
+        && get(/databases/$(database)/documents/admins/$(request.auth.uid)).data.role == "super_admin";
     }
 
+    /**
+     * Valide la création d'un participant :
+     * - Champs requis : name, eventId
+     * - name : string non vide de moins de 100 caractères
+     * - eventId : string non vide
+     * Les montants, statuts de paiement et downloads ne peuvent PAS être
+     * définis par le client lors de la création.
+     */
     function validParticipantCreate() {
       let data = request.resource.data;
       return data.keys().hasAll(['name', 'eventId'])
@@ -56,7 +78,8 @@ service cloud.firestore {
         && data.name.size() > 0
         && data.name.size() <= 100
         && data.eventId is string
-        && data.eventId.size() > 0;
+        && data.eventId.size() > 0
+        && !data.keys().hasAny(['paymentStatus', 'revenue', 'downloadToken']);
     }
   }
 }
